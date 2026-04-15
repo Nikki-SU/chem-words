@@ -232,6 +232,8 @@
                     <button class="select-btn active" data-v="2">中选英</button>
                     <button class="select-btn active" data-v="3">英选义</button>
                     <button class="select-btn active" data-v="4">义选英</button>
+                    <button class="select-btn active" data-v="5">句选中</button>
+                    <button class="select-btn active" data-v="6">句选义</button>
                 </div>
             </div>
         </div>
@@ -357,8 +359,8 @@
             <div class="header-title">添加单词</div>
         </div>
         <div class="card-section">
-            <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">格式：单词|中文|定义（中）|定义（英）|例句（每行一个）</div>
-            <textarea class="text-input" id="addText" style="min-height:200px;" placeholder="apple|苹果|一种常见的圆形水果|A round fruit that is red or green|I eat an apple every day."></textarea>
+            <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">格式：英文|中文|定义（中）|定义（英）|例句（词标粗）</div>
+            <textarea class="text-input" id="addText" style="min-height:200px;" placeholder="perovskite|钙钛矿|一种晶体材料|A crystalline material|**Perovskite** solar cells are efficient."></textarea>
         </div>
         <button class="btn btn-primary" id="btnConfirmAdd">确认添加</button>
     </div>
@@ -395,8 +397,8 @@
             if (!data) {
                 return {
                     books: {
-                        'default': { name: '默认词书', words: [], settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4] }, progress: null },
-                        'academic': { name: '学术站词汇', words: [], settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4] }, progress: null }
+                        'default': { name: '默认词书', words: [], settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4,5,6] }, progress: null },
+                        'academic': { name: '学术站词汇', words: [], settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4,5,6] }, progress: null }
                     },
                     currentBook: 'default',
                     apiConfig: null
@@ -405,7 +407,7 @@
             try { return JSON.parse(data); } 
             catch(e) { 
                 return {
-                    books: { 'default': { name: '默认词书', words: [], settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4] }, progress: null } },
+                    books: { 'default': { name: '默认词书', words: [], settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4,5,6] }, progress: null } },
                     currentBook: 'default',
                     apiConfig: null
                 };
@@ -449,7 +451,7 @@
             all.books[id] = {
                 name: name,
                 words: [],
-                settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4] },
+                settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4,5,6] },
                 progress: null
             };
             saveAllBooks(all);
@@ -483,7 +485,7 @@
                     all.books[bookId] = {
                         name: bookName || '导入词书',
                         words: [],
-                        settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4] },
+                        settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4,5,6] },
                         progress: null
                     };
                 }
@@ -821,12 +823,13 @@
                 const word = pendingWrong.word;
                 const defHtml = (word.defCn ? `<div class="word-def">📖 ${word.defCn}</div>` : '') + 
                                 (word.defEn ? `<div class="word-def" style="font-size:13px;">📘 ${word.defEn}</div>` : '');
+                const exHtml = word.ex ? `<div class="word-ex">${formatExample(word.ex, word.en)}</div>` : '';
                 html += `
                     <div class="word-card">
                         <div class="word-en">${word.en}</div>
                         <div class="word-cn">${word.cn}</div>
                         ${defHtml}
-                        <div class="word-ex">${word.ex || ''}</div>
+                        ${exHtml}
                     </div>
                     <button class="btn btn-primary" onclick="retryAfterCard()">重做</button>
                 `;
@@ -839,12 +842,13 @@
                     const word = study.queue[study.idx];
                     const defHtml = (word.defCn ? `<div class="word-def">📖 ${word.defCn}</div>` : '') + 
                                     (word.defEn ? `<div class="word-def" style="font-size:13px;">📘 ${word.defEn}</div>` : '');
+                    const exHtml = word.ex ? `<div class="word-ex">${formatExample(word.ex, word.en)}</div>` : '';
                     html += `
                         <div class="word-card">
                             <div class="word-en">${word.en}</div>
                             <div class="word-cn">${word.cn}</div>
                             ${defHtml}
-                            <div class="word-ex">${word.ex || ''}</div>
+                            ${exHtml}
                         </div>
                         <button class="btn btn-primary" onclick="nextWord()">下一个</button>
                     `;
@@ -874,7 +878,7 @@
                     }
                 }
                 
-                const typeNames = { 1: '英选中', 2: '中选英', 3: '英选义', 4: '义选英' };
+                const typeNames = { 1: '英选中', 2: '中选英', 3: '英选义', 4: '义选英', 5: '句选中', 6: '句选义' };
                 html += `<div class="stage-hint">${typeNames[currentType]}</div>`;
                 const word = study.queue[study.idx];
                 html += renderQuestion(word, currentType, d, typeNames[currentType]);
@@ -905,7 +909,6 @@
                     // 英选义：学习用中文定义，复习用英文定义
                     question = word.en;
                     const def3 = (study.mode === 'review' && word.defEn) ? word.defEn : (word.defCn || word.cn);
-                    // 干扰项：同模式的定义
                     const othersDef3 = others.map(o => {
                         if (study.mode === 'review' && o.defEn) return o.defEn;
                         return o.defCn || o.cn;
@@ -921,9 +924,30 @@
                     options = [word.en, ...others.map(o => o.en)].sort(() => Math.random() - 0.5);
                     correct = word.en;
                     break;
+                case 5:
+                    // 句选中：给出例句（词标粗），选出该词的中文
+                    const ex5 = formatExample(word.ex, word.en);
+                    question = ex5 || `${word.en} (无例句)`;
+                    options = [word.cn, ...others.map(o => o.cn)].sort(() => Math.random() - 0.5);
+                    correct = word.cn;
+                    if (word.ex) speak(word.ex.replace(/\*\*/g, '').replace(/<[^>]*>/g, ''));
+                    break;
+                case 6:
+                    // 句选义：给出例句（词标粗），选出该词的定义
+                    const ex6 = formatExample(word.ex, word.en);
+                    question = ex6 || `${word.en} (无例句)`;
+                    const def6 = (study.mode === 'review' && word.defEn) ? word.defEn : (word.defCn || word.cn);
+                    const othersDef6 = others.map(o => {
+                        if (study.mode === 'review' && o.defEn) return o.defEn;
+                        return o.defCn || o.cn;
+                    });
+                    options = [def6, ...othersDef6].sort(() => Math.random() - 0.5);
+                    correct = def6;
+                    if (word.ex) speak(word.ex.replace(/\*\*/g, '').replace(/<[^>]*>/g, ''));
+                    break;
             }
             
-            let html = `<div class="word-card"><div class="word-en">${question}</div></div><div class="options">`;
+            let html = `<div class="word-card"><div class="word-en" style="${type >= 5 ? 'font-size:18px;line-height:1.6;' : ''}">${question}</div></div><div class="options">`;
             options.forEach(opt => {
                 html += `<button class="option" onclick="checkAnswer('${opt.replace(/'/g, "\\'")}', '${correct.replace(/'/g, "\\'")}', ${type})">${opt}</button>`;
             });
@@ -932,6 +956,19 @@
                 html += `<button class="btn btn-outline" style="margin-top:16px;" onclick="zhanWord()">斩（直接掌握）</button>`;
             }
             return html;
+        }
+        
+        // 格式化例句，将 **word** 转为高亮显示
+        function formatExample(ex, word) {
+            if (!ex) return '';
+            // 支持 **word** 格式
+            let formatted = ex.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--primary);">$1</strong>');
+            // 如果没有 **word** 格式，自动将词高亮
+            if (!ex.includes('**') && word) {
+                const regex = new RegExp(`\\b(${word})\\b`, 'gi');
+                formatted = ex.replace(regex, '<strong style="color:var(--primary);">$1</strong>');
+            }
+            return formatted;
         }
         
         window.nextWord = function() {
@@ -1099,7 +1136,7 @@
         }
         
         // ========== 导入词书 ==========
-        // 词书格式：单词|中文|定义（中）|定义（英）|例句
+        // 词书格式：英文|中文|定义（中）|定义（英）|例句（词标粗，如 **perovskite** solar cells）
         function parseWordLine(line) {
             const parts = line.split('|');
             if (parts.length < 2) return null;
@@ -1108,7 +1145,7 @@
                 cn: parts[1].trim(),
                 defCn: parts[2] ? parts[2].trim() : '',  // 中文定义
                 defEn: parts[3] ? parts[3].trim() : '',  // 英文定义
-                ex: parts[4] ? parts[4].trim() : '',     // 例句
+                ex: parts[4] ? parts[4].trim() : '',     // 例句（词标粗）
                 cardShown: false,
                 streak: 0,
                 wrongCount: 0,
@@ -1213,13 +1250,15 @@
             const maxCount = count + 5;
             return `请从以下文献中提取${minCount}-${maxCount}个专业词汇和术语，要求：
 1. 只提取专业术语，不要提取日常词汇（如the, is, are等）
-2. 每个词汇必须包含：单词|中文翻译|中文定义|英文定义|例句
-3. 格式严格为：单词|中文|定义（中）|定义（英）|例句
-4. ${field ? '专业领域：' + field : ''}
-5. 按重要性排序
+2. 每个词汇必须包含：单词|中文翻译|中文定义|英文定义|例句（例句中该词用**加粗**标记）
+3. 格式严格为：英文|中文|定义（中）|定义（英）|例句
+4. 例句优先从原文中选取，并确保目标词汇用**词汇**格式标粗
+5. ${field ? '专业领域：' + field : ''}
+6. 按重要性排序
 
 示例格式：
-perovskite|钙钛矿|一种具有ABX3晶体结构的材料，广泛应用于太阳能电池领域。|A crystalline material with the formula ABX3, widely used in solar cells.|Perovskite solar cells have achieved efficiency over 25%.
+perovskite|钙钛矿|一种具有ABX3晶体结构的材料，广泛应用于太阳能电池领域。|A crystalline material with the formula ABX3, widely used in solar cells.|**Perovskite** solar cells have achieved efficiency over 25%.
+photovoltaic|光伏的|与光生电效应相关的，指将光能直接转换为电能的过程。|Relating to the production of electricity from light.|**Photovoltaic** technology is key for renewable energy.
 
 请直接输出词汇列表，不要其他解释。`;
         }
@@ -1528,7 +1567,7 @@ perovskite|钙钛矿|一种具有ABX3晶体结构的材料，广泛应用于太�
                     all.books[bookId] = {
                         name: getData().name,
                         words: [],
-                        settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4] },
+                        settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4,5,6] },
                         progress: null
                     };
                     saveAllBooks(all);
