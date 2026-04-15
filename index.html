@@ -625,12 +625,18 @@
                     break;
                 case 3:
                     question = word.en;
-                    options = [word.def || word.cn, ...others.map(o => o.def || o.cn)].sort(() => Math.random() - 0.5);
-                    correct = word.def || word.cn;
+                    // 学习用中文义，复习用英文义
+                    const def3 = (study.mode === 'review' && word.def) ? word.def : word.cn;
+                    const othersDef3 = others.map(o => (study.mode === 'review' && o.def) ? o.def : o.cn);
+                    options = [def3, ...othersDef3].sort(() => Math.random() - 0.5);
+                    correct = def3;
                     speak(word.en);
                     break;
                 case 4:
-                    question = word.def || word.cn;
+                    // 学习用中文义，复习用英文义
+                    const def4 = (study.mode === 'review' && word.def) ? word.def : word.cn;
+                    const othersDef4 = others.map(o => (study.mode === 'review' && o.def) ? o.def : o.cn);
+                    question = def4;
                     options = [word.en, ...others.map(o => o.en)].sort(() => Math.random() - 0.5);
                     correct = word.en;
                     break;
