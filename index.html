@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>化学单词通</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 首页/主菜单 -->
+    <div id="app" class="app-container">
+        <!-- 顶部标题栏 -->
+        <header class="header">
+            <h1>📚 化学单词通</h1>
+            <div class="header-actions">
+                <button id="btn-settings" class="icon-btn" title="设置">⚙️</button>
+            </div>
+        </header>
+
+        <!-- 主菜单 -->
+        <main id="main-menu" class="menu-container">
+            <div class="menu-card" id="btn-start-learn">
+                <div class="menu-icon">🎯</div>
+                <h2>开始学习</h2>
+                <p>新词学习 + 复习</p>
+            </div>
+            <div class="menu-card" id="btn-word-book">
+                <div class="menu-icon">📖</div>
+                <h2>词书管理</h2>
+                <p>导入/查看词书</p>
+            </div>
+            <div class="menu-card" id="btn-notebook">
+                <div class="menu-icon">📝</div>
+                <h2>生词本</h2>
+                <p>标记的生词</p>
+            </div>
+            <div class="menu-card" id="btn-stats">
+                <div class="menu-icon">📊</div>
+                <h2>学习统计</h2>
+                <p>查看学习进度</p>
+            </div>
+        </main>
+
+        <!-- 统计面板 -->
+        <div id="stats-panel" class="panel hidden">
+            <div class="panel-header">
+                <button class="back-btn">← 返回</button>
+                <h2>学习统计</h2>
+            </div>
+            <div class="stats-content">
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-total">0</div>
+                    <div class="stat-label">总词汇量</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-learned">0</div>
+                    <div class="stat-label">已掌握</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-notebook">0</div>
+                    <div class="stat-label">生词本</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-today">0</div>
+                    <div class="stat-label">今日已学</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生词本面板 -->
+        <div id="notebook-panel" class="panel hidden">
+            <div class="panel-header">
+                <button class="back-btn">← 返回</button>
+                <h2>生词本</h2>
+            </div>
+            <div class="notebook-list" id="notebook-list">
+                <div class="empty-state">暂无生词，继续保持！🎉</div>
+            </div>
+        </div>
+
+        <!-- 词书管理面板 -->
+        <div id="wordbook-panel" class="panel hidden">
+            <div class="panel-header">
+                <button class="back-btn">← 返回</button>
+                <h2>词书管理</h2>
+            </div>
+            <div class="wordbook-content">
+                <div class="import-section">
+                    <h3>📥 导入词书</h3>
+                    <p class="hint">每行格式：<br>英文|中文|定义|例句</p>
+                    <textarea id="word-input" placeholder="粘贴词书内容到这里..."></textarea>
+                    <button id="btn-import" class="primary-btn">导入词书</button>
+                    <button id="btn-import-sample" class="secondary-btn">加载示例词书</button>
+                </div>
+                <div class="wordbook-info">
+                    <h3>📚 当前词书</h3>
+                    <p>词汇数量：<span id="word-count">0</span></p>
+                    <button id="btn-clear-words" class="danger-btn">清空词书</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设置面板 -->
+        <div id="settings-panel" class="panel hidden">
+            <div class="panel-header">
+                <button class="back-btn">← 返回</button>
+                <h2>学习设置</h2>
+            </div>
+            <div class="settings-content">
+                <div class="setting-item">
+                    <label>每日新学数量</label>
+                    <div class="setting-options" id="setting-new-count">
+                        <button class="option-btn" data-value="10">10</button>
+                        <button class="option-btn selected" data-value="30">30</button>
+                        <button class="option-btn" data-value="50">50</button>
+                        <button class="option-btn" data-value="100">100</button>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>每日复习数量</label>
+                    <div class="setting-options" id="setting-review-count">
+                        <button class="option-btn selected" data-value="10">10</button>
+                        <button class="option-btn" data-value="30">30</button>
+                        <button class="option-btn" data-value="50">50</button>
+                        <button class="option-btn" data-value="100">100</button>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>发音设置</label>
+                    <div class="toggle-container">
+                        <span>自动朗读</span>
+                        <button id="toggle-tts" class="toggle-btn active"></button>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <button id="btn-reset-progress" class="danger-btn full-width">重置所有进度</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习页面 -->
+        <div id="learn-panel" class="panel hidden">
+            <div class="learn-header">
+                <button class="back-btn" id="btn-quit-learn">✕</button>
+                <div class="learn-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="learn-progress-fill"></div>
+                    </div>
+                    <span class="progress-text" id="learn-progress-text">0/0</span>
+                </div>
+            </div>
+            
+            <!-- 模式A: 英文选中文 -->
+            <div id="mode-a" class="learn-content hidden">
+                <div class="question-card">
+                    <button class="speak-btn" data-text="">🔊</button>
+                    <div class="word-display" id="mode-a-word">apple</div>
+                    <p class="question-hint">请选择中文释义</p>
+                </div>
+                <div class="options-grid" id="mode-a-options"></div>
+            </div>
+
+            <!-- 模式B: 中文选英文 -->
+            <div id="mode-b" class="learn-content hidden">
+                <div class="question-card">
+                    <div class="word-display" id="mode-b-word">苹果</div>
+                    <p class="question-hint">请选择英文单词</p>
+                </div>
+                <div class="options-grid" id="mode-b-options"></div>
+            </div>
+
+            <!-- 模式C: 英文选定义 -->
+            <div id="mode-c" class="learn-content hidden">
+                <div class="question-card">
+                    <button class="speak-btn" data-text="">🔊</button>
+                    <div class="word-display" id="mode-c-word">apple</div>
+                    <p class="question-hint">请选择定义</p>
+                </div>
+                <div class="options-grid" id="mode-c-options"></div>
+            </div>
+
+            <!-- 模式D: 定义选英文 -->
+            <div id="mode-d" class="learn-content hidden">
+                <div class="question-card">
+                    <div class="word-display" id="mode-d-word">一种常见的水果</div>
+                    <p class="question-hint">请选择英文单词</p>
+                </div>
+                <div class="options-grid" id="mode-d-options"></div>
+            </div>
+
+            <!-- 单词详情页 -->
+            <div id="word-detail" class="learn-content hidden">
+                <div class="detail-card">
+                    <button class="speak-btn" data-text="">🔊</button>
+                    <h2 class="detail-word" id="detail-word">apple</h2>
+                    <p class="detail-trans" id="detail-trans">苹果</p>
+                    <div class="detail-section">
+                        <h4>📖 定义</h4>
+                        <p id="detail-def">一种常见的水果</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>💬 例句</h4>
+                        <p id="detail-sentence">I eat an apple every day.</p>
+                    </div>
+                    <button id="btn-next-learn" class="primary-btn full-width">继续 →</button>
+                </div>
+            </div>
+
+            <!-- 学习完成页 -->
+            <div id="learn-complete" class="learn-content hidden">
+                <div class="complete-card">
+                    <div class="complete-icon">🎉</div>
+                    <h2>太棒了！</h2>
+                    <p>今日学习已完成！</p>
+                    <div class="complete-stats">
+                        <div class="stat-item">
+                            <span class="stat-num" id="complete-learned">0</span>
+                            <span class="stat-lbl">新学</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-num" id="complete-reviewed">0</span>
+                            <span class="stat-lbl">复习</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-num" id="complete-correct">0</span>
+                            <span class="stat-lbl">正确</span>
+                        </div>
+                    </div>
+                    <button id="btn-back-menu" class="primary-btn full-width">返回主页</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast提示 -->
+        <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script src="data-manager.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
