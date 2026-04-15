@@ -2,242 +2,1672 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>化学单词通</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>化学词汇背单词</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #4A90D9;
+            --success: #52C41A;
+            --danger: #FF4D4F;
+            --warning: #FAAD14;
+            --bg: #F5F5F5;
+            --card-bg: #FFFFFF;
+            --text: #333333;
+            --text-secondary: #666666;
+            --border: #E8E8E8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            max-width: 430px;
+            margin: 0 auto;
+        }
+
+        /* 头部导航 */
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* 标签页 */
+        .tabs {
+            display: flex;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 50px;
+            z-index: 99;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* 内容区域 */
+        .content {
+            padding: 16px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        /* 按钮样式 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:active {
+            background: #3A80C9;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+            width: auto;
+        }
+
+        /* 设置区域 */
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .settings-row:last-child {
+            border-bottom: none;
+        }
+
+        .settings-label {
+            font-size: 15px;
+        }
+
+        .settings-value {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+
+        /* 学习页面 */
+        .study-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .study-card .word {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .study-card .word:hover {
+            color: #3A80C9;
+        }
+
+        .study-card .phonetic {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .study-card .meaning {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .study-card .definition {
+            font-size: 16px;
+            color: var(--text-secondary);
+            padding: 12px;
+            background: #F8F9FA;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .study-card .example {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-style: italic;
+            line-height: 1.6;
+        }
+
+        .speaker-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        /* 选项按钮 */
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .option {
+            padding: 16px;
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .option:active {
+            transform: scale(0.98);
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            background: rgba(74, 144, 217, 0.1);
+        }
+
+        .option.correct {
+            border-color: var(--success);
+            background: rgba(82, 196, 26, 0.15);
+        }
+
+        .option.wrong {
+            border-color: var(--danger);
+            background: rgba(255, 77, 79, 0.15);
+        }
+
+        .option.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* 模式标签 */
+        .mode-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--primary);
+            color: white;
+            border-radius: 16px;
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+
+        /* 统计卡片 */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* 单词列表 */
+        .word-list {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .word-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .word-item:last-child {
+            border-bottom: none;
+        }
+
+        .word-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .word-info p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .word-stats {
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .word-stats .streak {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        /* 文件上传 */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(74, 144, 217, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* 预览区域 */
+        .preview-area {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .preview-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+
+        .preview-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .preview-item {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .preview-item:last-child {
+            border-bottom: none;
+        }
+
+        .preview-item .word {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .preview-item .meaning {
+            color: var(--text-secondary);
+        }
+
+        /* 导入结果 */
+        .import-result {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .import-success {
+            color: var(--success);
+        }
+
+        .import-fail {
+            color: var(--danger);
+        }
+
+        /* 完成页面 */
+        .completion-card {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .completion-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .completion-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .completion-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        /* 本子标签 */
+        .notebook-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .notebook-tab {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .notebook-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        /* 轮次指示器 */
+        .round-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .round-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+        }
+
+        .round-dot.active {
+            background: var(--primary);
+        }
+
+        .round-dot.completed {
+            background: var(--success);
+        }
+
+        /* Toast提示 */
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* 开始学习按钮 */
+        .study-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .action-btn {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .action-new {
+            background: linear-gradient(135deg, #4A90D9, #6BA3E0);
+            color: white;
+        }
+
+        .action-review {
+            background: linear-gradient(135deg, #52C41A, #73D13D);
+            color: white;
+        }
+
+        .action-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .action-desc {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* 隐藏类 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 例句标记 */
+        .example-marker {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* 删除按钮 */
+        .delete-btn {
+            color: var(--danger);
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            padding: 8px 0;
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        /* 内容底部留白 */
+        .page {
+            padding-bottom: 80px;
+        }
+
+        /* 错误详情 */
+        .error-detail {
+            font-size: 12px;
+            color: var(--danger);
+            margin-top: 4px;
+        }
+    </style>
 </head>
 <body>
-    <!-- 首页/主菜单 -->
-    <div id="app" class="app-container">
-        <!-- 顶部标题栏 -->
-        <header class="header">
-            <h1>📚 化学单词通</h1>
-            <div class="header-actions">
-                <button id="btn-settings" class="icon-btn" title="设置">⚙️</button>
-            </div>
-        </header>
+    <div class="header">
+        <h1>🧪 化学词汇背单词</h1>
+    </div>
 
-        <!-- 主菜单 -->
-        <main id="main-menu" class="menu-container">
-            <div class="menu-card" id="btn-start-learn">
-                <div class="menu-icon">🎯</div>
-                <h2>开始学习</h2>
-                <p>新词学习 + 复习</p>
-            </div>
-            <div class="menu-card" id="btn-word-book">
-                <div class="menu-icon">📖</div>
-                <h2>词书管理</h2>
-                <p>导入/查看词书</p>
-            </div>
-            <div class="menu-card" id="btn-notebook">
-                <div class="menu-icon">📝</div>
-                <h2>生词本</h2>
-                <p>标记的生词</p>
-            </div>
-            <div class="menu-card" id="btn-stats">
-                <div class="menu-icon">📊</div>
-                <h2>学习统计</h2>
-                <p>查看学习进度</p>
-            </div>
-        </main>
+    <!-- 标签页导航 -->
+    <div class="tabs">
+        <div class="tab active" data-page="home">首页</div>
+        <div class="tab" data-page="study">学习</div>
+        <div class="tab" data-page="books">本子</div>
+        <div class="tab" data-page="import">导入</div>
+    </div>
 
-        <!-- 统计面板 -->
-        <div id="stats-panel" class="panel hidden">
-            <div class="panel-header">
-                <button class="back-btn">← 返回</button>
-                <h2>学习统计</h2>
-            </div>
-            <div class="stats-content">
-                <div class="stat-card">
-                    <div class="stat-number" id="stat-total">0</div>
-                    <div class="stat-label">总词汇量</div>
+    <div class="content">
+        <!-- 首页 -->
+        <div class="page active" id="page-home">
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalCount">0</div>
+                    <div class="stat-label">总词汇</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="stat-learned">0</div>
+                <div class="stat-item">
+                    <div class="stat-value" id="learnedCount">0</div>
+                    <div class="stat-label">已学习</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="masteredCount">0</div>
                     <div class="stat-label">已掌握</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="stat-notebook">0</div>
-                    <div class="stat-label">生词本</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="stat-today">0</div>
-                    <div class="stat-label">今日已学</div>
-                </div>
             </div>
-        </div>
 
-        <!-- 生词本面板 -->
-        <div id="notebook-panel" class="panel hidden">
-            <div class="panel-header">
-                <button class="back-btn">← 返回</button>
-                <h2>生词本</h2>
+            <div class="card">
+                <h3 style="margin-bottom: 12px;">今日学习</h3>
+                <div class="settings-row">
+                    <span class="settings-label">新学数量</span>
+                    <select id="newCount">
+                        <option value="10">10词</option>
+                        <option value="30">30词</option>
+                        <option value="50" selected>50词</option>
+                        <option value="100">100词</option>
+                    </select>
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">复习数量</span>
+                    <select id="reviewCount">
+                        <option value="10">10词</option>
+                        <option value="30">30词</option>
+                        <option value="50" selected>50词</option>
+                        <option value="100">100词</option>
+                    </select>
+                </div>
             </div>
-            <div class="notebook-list" id="notebook-list">
-                <div class="empty-state">暂无生词，继续保持！🎉</div>
-            </div>
-        </div>
 
-        <!-- 词书管理面板 -->
-        <div id="wordbook-panel" class="panel hidden">
-            <div class="panel-header">
-                <button class="back-btn">← 返回</button>
-                <h2>词书管理</h2>
-            </div>
-            <div class="wordbook-content">
-                <div class="import-section">
-                    <h3>📥 导入词书</h3>
-                    <p class="hint">每行格式：<br>英文|中文|定义|例句</p>
-                    <textarea id="word-input" placeholder="粘贴词书内容到这里..."></textarea>
-                    <button id="btn-import" class="primary-btn">导入词书</button>
-                    <button id="btn-import-sample" class="secondary-btn">加载示例词书</button>
+            <div class="study-actions">
+                <div class="action-btn action-new" id="btnNewStudy">
+                    <div class="action-title">新学</div>
+                    <div class="action-desc">学习新单词</div>
                 </div>
-                <div class="wordbook-info">
-                    <h3>📚 当前词书</h3>
-                    <p>词汇数量：<span id="word-count">0</span></p>
-                    <button id="btn-clear-words" class="danger-btn">清空词书</button>
+                <div class="action-btn action-review" id="btnReview">
+                    <div class="action-title">复习</div>
+                    <div class="action-desc">巩固已学单词</div>
                 </div>
             </div>
-        </div>
 
-        <!-- 设置面板 -->
-        <div id="settings-panel" class="panel hidden">
-            <div class="panel-header">
-                <button class="back-btn">← 返回</button>
-                <h2>学习设置</h2>
-            </div>
-            <div class="settings-content">
-                <div class="setting-item">
-                    <label>每日新学数量</label>
-                    <div class="setting-options" id="setting-new-count">
-                        <button class="option-btn" data-value="10">10</button>
-                        <button class="option-btn selected" data-value="30">30</button>
-                        <button class="option-btn" data-value="50">50</button>
-                        <button class="option-btn" data-value="100">100</button>
-                    </div>
-                </div>
-                <div class="setting-item">
-                    <label>每日复习数量</label>
-                    <div class="setting-options" id="setting-review-count">
-                        <button class="option-btn selected" data-value="10">10</button>
-                        <button class="option-btn" data-value="30">30</button>
-                        <button class="option-btn" data-value="50">50</button>
-                        <button class="option-btn" data-value="100">100</button>
-                    </div>
-                </div>
-                <div class="setting-item">
-                    <label>发音设置</label>
-                    <div class="toggle-container">
-                        <span>自动朗读</span>
-                        <button id="toggle-tts" class="toggle-btn active"></button>
-                    </div>
-                </div>
-                <div class="setting-item">
-                    <button id="btn-reset-progress" class="danger-btn full-width">重置所有进度</button>
-                </div>
+            <div class="card" style="margin-top: 16px;">
+                <h3 style="margin-bottom: 12px;">快捷操作</h3>
+                <button class="btn btn-outline" id="btnResetProgress">重置学习进度</button>
+                <button class="btn btn-outline" id="btnClearData">清除所有数据</button>
             </div>
         </div>
 
         <!-- 学习页面 -->
-        <div id="learn-panel" class="panel hidden">
-            <div class="learn-header">
-                <button class="back-btn" id="btn-quit-learn">✕</button>
-                <div class="learn-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="learn-progress-fill"></div>
+        <div class="page" id="page-study">
+            <!-- 学习准备区 -->
+            <div id="studyReady">
+                <div class="card">
+                    <h3 style="margin-bottom: 12px;">📚 学习准备</h3>
+                    <div id="readyStats"></div>
+                </div>
+                <div class="study-actions">
+                    <div class="action-btn action-new" id="btnStartNew">
+                        <div class="action-title">新学</div>
+                        <div class="action-desc">学习新单词</div>
                     </div>
-                    <span class="progress-text" id="learn-progress-text">0/0</span>
-                </div>
-            </div>
-            
-            <!-- 模式A: 英文选中文 -->
-            <div id="mode-a" class="learn-content hidden">
-                <div class="question-card">
-                    <button class="speak-btn" data-text="">🔊</button>
-                    <div class="word-display" id="mode-a-word">apple</div>
-                    <p class="question-hint">请选择中文释义</p>
-                </div>
-                <div class="options-grid" id="mode-a-options"></div>
-            </div>
-
-            <!-- 模式B: 中文选英文 -->
-            <div id="mode-b" class="learn-content hidden">
-                <div class="question-card">
-                    <div class="word-display" id="mode-b-word">苹果</div>
-                    <p class="question-hint">请选择英文单词</p>
-                </div>
-                <div class="options-grid" id="mode-b-options"></div>
-            </div>
-
-            <!-- 模式C: 英文选定义 -->
-            <div id="mode-c" class="learn-content hidden">
-                <div class="question-card">
-                    <button class="speak-btn" data-text="">🔊</button>
-                    <div class="word-display" id="mode-c-word">apple</div>
-                    <p class="question-hint">请选择定义</p>
-                </div>
-                <div class="options-grid" id="mode-c-options"></div>
-            </div>
-
-            <!-- 模式D: 定义选英文 -->
-            <div id="mode-d" class="learn-content hidden">
-                <div class="question-card">
-                    <div class="word-display" id="mode-d-word">一种常见的水果</div>
-                    <p class="question-hint">请选择英文单词</p>
-                </div>
-                <div class="options-grid" id="mode-d-options"></div>
-            </div>
-
-            <!-- 单词详情页 -->
-            <div id="word-detail" class="learn-content hidden">
-                <div class="detail-card">
-                    <button class="speak-btn" data-text="">🔊</button>
-                    <h2 class="detail-word" id="detail-word">apple</h2>
-                    <p class="detail-trans" id="detail-trans">苹果</p>
-                    <div class="detail-section">
-                        <h4>📖 定义</h4>
-                        <p id="detail-def">一种常见的水果</p>
+                    <div class="action-btn action-review" id="btnStartReview">
+                        <div class="action-title">复习</div>
+                        <div class="action-desc">巩固已学单词</div>
                     </div>
-                    <div class="detail-section">
-                        <h4>💬 例句</h4>
-                        <p id="detail-sentence">I eat an apple every day.</p>
-                    </div>
-                    <button id="btn-next-learn" class="primary-btn full-width">继续 →</button>
                 </div>
             </div>
 
-            <!-- 学习完成页 -->
-            <div id="learn-complete" class="learn-content hidden">
-                <div class="complete-card">
-                    <div class="complete-icon">🎉</div>
-                    <h2>太棒了！</h2>
-                    <p>今日学习已完成！</p>
-                    <div class="complete-stats">
+            <!-- 学习进行区 -->
+            <div id="studyActive" class="hidden">
+                <div class="mode-badge" id="modeBadge">新学 - 展示卡片</div>
+                
+                <div class="round-indicator" id="roundIndicator"></div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="progressText">第 1/4 轮</div>
+
+                <!-- 单词卡片（展示用） -->
+                <div class="study-card" id="wordCard">
+                    <button class="speaker-btn" id="speakerBtn">🔊</button>
+                    <div class="word" id="displayWord">Apple</div>
+                    <div class="phonetic" id="displayPhonetic">/ˈæpəl/</div>
+                    <div class="meaning" id="displayMeaning">苹果</div>
+                    <div class="definition" id="displayDefinition">一种圆形甜水果</div>
+                    <div class="example" id="displayExample">An apple a day keeps the doctor away.</div>
+                </div>
+
+                <!-- 选项区 -->
+                <div class="options" id="optionsArea"></div>
+
+                <!-- 下一题按钮 -->
+                <button class="btn btn-primary hidden" id="btnNextWord">下一题</button>
+            </div>
+
+            <!-- 学习完成区 -->
+            <div id="studyComplete" class="hidden">
+                <div class="completion-card">
+                    <div class="completion-icon">🎉</div>
+                    <div class="completion-title" id="completeTitle">学习完成！</div>
+                    <div class="completion-subtitle" id="completeSubtitle">太棒了，继续保持！</div>
+                    <div class="stat-grid" style="margin-top: 24px;">
                         <div class="stat-item">
-                            <span class="stat-num" id="complete-learned">0</span>
-                            <span class="stat-lbl">新学</span>
+                            <div class="stat-value" id="completeCorrect">0</div>
+                            <div class="stat-label">正确</div>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-num" id="complete-reviewed">0</span>
-                            <span class="stat-lbl">复习</span>
+                            <div class="stat-value" id="completeWrong">0</div>
+                            <div class="stat-label">错误</div>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-num" id="complete-correct">0</span>
-                            <span class="stat-lbl">正确</span>
+                            <div class="stat-value" id="completeAccuracy">0%</div>
+                            <div class="stat-label">正确率</div>
                         </div>
                     </div>
-                    <button id="btn-back-menu" class="primary-btn full-width">返回主页</button>
+                    <button class="btn btn-primary" id="btnBackHome">返回首页</button>
                 </div>
             </div>
         </div>
 
-        <!-- Toast提示 -->
-        <div id="toast" class="toast hidden"></div>
+        <!-- 本子页面 -->
+        <div class="page" id="page-books">
+            <div class="notebook-tabs">
+                <div class="notebook-tab active" data-book="all">全部</div>
+                <div class="notebook-tab" data-book="new">生词本</div>
+                <div class="notebook-tab" data-book="wrong">错词本</div>
+                <div class="notebook-tab" data-book="mastered">已掌握</div>
+            </div>
+
+            <div class="word-list" id="wordList">
+                <div class="empty-state">
+                    <div class="empty-icon">📚</div>
+                    <p>暂无单词</p>
+                    <p style="font-size: 12px;">请先导入词书或添加单词</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 导入页面 -->
+        <div class="page" id="page-import">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📤</div>
+                <div class="upload-text">点击上传词书文件</div>
+                <div class="upload-text" style="font-size: 12px; margin-top: 8px;">
+                    格式：英文|中文|定义|例句<br>
+                    每行一个单词
+                </div>
+            </div>
+            <input type="file" id="fileInput" accept=".txt">
+
+            <div class="preview-area hidden" id="previewArea">
+                <div class="preview-title">📋 预览（前20条）</div>
+                <div class="preview-list" id="previewList"></div>
+            </div>
+
+            <div class="import-result hidden" id="importResult">
+                <div id="importSummary"></div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 12px;">💡 格式说明</h3>
+                <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+                    每行一个单词，格式：<br>
+                    <code style="background: #F0F0F0; padding: 2px 6px; border-radius: 4px;">英文|中文|定义|例句</code><br><br>
+                    <strong>示例：</strong><br>
+                    <code>Proton|质子|带正电的亚原子粒子|The proton has a positive charge.</code>
+                </p>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 12px;">📥 内置词书（化学词汇）</h3>
+                <button class="btn btn-primary" id="btnLoadBuiltIn">加载内置化学词汇</button>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">
+                    已包含20个常用化学专业词汇
+                </p>
+            </div>
+        </div>
     </div>
 
-    <script src="data-manager.js"></script>
-    <script src="app.js"></script>
+    <script>
+        // ==================== 数据管理 ====================
+        const DB = {
+            // 获取所有数据
+            getData() {
+                const data = localStorage.getItem('flashcardData');
+                if (data) {
+                    return JSON.parse(data);
+                }
+                return {
+                    words: [],
+                    wrongWords: {}, // {wordId: errorCount}
+                    masteredWords: {}, // {wordId: streakCount}
+                    learnedWords: {}, // {wordId: true}
+                    lastStudyDate: null,
+                    todayNewLearned: 0,
+                    todayReviewed: 0
+                };
+            },
+
+            // 保存数据
+            saveData(data) {
+                localStorage.setItem('flashcardData', JSON.stringify(data));
+            },
+
+            // 重置学习进度
+            resetProgress() {
+                const data = this.getData();
+                data.learnedWords = {};
+                data.wrongWords = {};
+                data.masteredWords = {};
+                data.todayNewLearned = 0;
+                data.todayReviewed = 0;
+                data.lastStudyDate = null;
+                this.saveData(data);
+            },
+
+            // 清除所有数据
+            clearAll() {
+                localStorage.removeItem('flashcardData');
+            }
+        };
+
+        // ==================== 示例词书（化学词汇） ====================
+        const BUILTIN_WORDS = [
+            { word: "Proton", meaning: "质子", definition: "带正电荷的亚原子粒子，位于原子核中", example: "The proton has a positive charge, while the electron has a negative charge." },
+            { word: "Neutron", meaning: "中子", definition: "不带电荷的亚原子粒子，位于原子核中", example: "The number of neutrons in an atom determines its isotope." },
+            { word: "Electron", meaning: "电子", definition: "带负电荷的亚原子粒子，绕原子核运动", example: "Electrons orbit the nucleus in specific energy levels." },
+            { word: "Molecule", meaning: "分子", definition: "由两个或多个原子通过化学键结合而成的粒子", example: "A water molecule consists of two hydrogen atoms and one oxygen atom." },
+            { word: "Atom", meaning: "原子", definition: "化学元素的基本单位，由原子核和电子组成", example: "Every element is composed of atoms of a single type." },
+            { word: "Catalyst", meaning: "催化剂", definition: "加快化学反应速率而本身不被消耗的物质", example: "Enzymes are biological catalysts that speed up metabolic reactions." },
+            { word: "Oxidation", meaning: "氧化", definition: "原子或分子失去电子的化学反应过程", example: "Rust is the result of oxidation of iron when exposed to oxygen." },
+            { word: "Reduction", meaning: "还原", definition: "原子或分子获得电子的化学反应过程", example: "The reduction of iron ore produces metallic iron." },
+            { word: "Equilibrium", meaning: "平衡", definition: "正逆反应速率相等，反应物和产物浓度不再改变的状态", example: "In a state of equilibrium, the forward and reverse reactions occur at equal rates." },
+            { word: "Isotope", meaning: "同位素", definition: "具有相同质子数但中子数不同的原子", example: "Carbon-12 and Carbon-14 are isotopes of carbon with different mass numbers." },
+            { word: "Ion", meaning: "离子", definition: "获得或失去电子而带净电荷的原子或分子", example: "Sodium ions and chloride ions combine to form sodium chloride." },
+            { word: "Covalent Bond", meaning: "共价键", definition: "两个原子共享电子对形成的化学键", example: "A water molecule contains covalent bonds between hydrogen and oxygen atoms." },
+            { word: "Ionic Bond", meaning: "离子键", definition: "通过正负离子间的静电吸引力形成的化学键", example: "Sodium chloride forms through ionic bonding between Na+ and Cl- ions." },
+            { word: "Periodic Table", meaning: "元素周期表", definition: "按原子序数和化学性质排列的化学元素表格", example: "Elements in the same group of the periodic table have similar chemical properties." },
+            { word: "Valence Electron", meaning: "价电子", definition: "原子最外层电子，决定元素的化学性质", example: "Carbon has four valence electrons, allowing it to form four bonds." },
+            { word: "Chemical Reaction", meaning: "化学反应", definition: "物质发生变化产生新物质的过程", example: "The chemical reaction between hydrogen and oxygen produces water." },
+            { word: "Solution", meaning: "溶液", definition: "一种或多种物质均匀分散在另一种物质中的混合物", example: "Salt dissolves in water to form a homogeneous solution." },
+            { word: "Acid", meaning: "酸", definition: "能在水溶液中释放氢离子产生H+的物质", example: "Hydrochloric acid is a strong acid commonly found in the stomach." },
+            { word: "Base", meaning: "碱", definition: "能在水溶液中释放氢氧根离子产生OH-的物质", example: "Sodium hydroxide is a strong base used in many industrial processes." },
+            { word: "Stoichiometry", meaning: "化学计量", definition: "研究化学反应中反应物和产物的数量关系的学科", example: "Stoichiometry helps calculate the exact amounts of reactants needed." }
+        ];
+
+        // ==================== 学习状态管理 ====================
+        let studyState = {
+            mode: null, // 'new' 或 'review'
+            phase: 0, // 0:展示卡片 1:英选中 2:中选英 3:英选义 4:义选英
+            currentIndex: 0,
+            wordQueue: [],
+            correctCount: 0,
+            wrongCount: 0,
+            showingCard: false,
+            roundCorrect: {} // {wordId: correctCount}
+        };
+
+        // ==================== 工具函数 ====================
+        function showToast(message) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        function speak(word) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function getToday() {
+            return new Date().toDateString();
+        }
+
+        // ==================== 界面渲染 ====================
+        function updateStats() {
+            const data = DB.getData();
+            const total = data.words.length;
+            const learned = Object.keys(data.learnedWords).length;
+            const mastered = Object.keys(data.masteredWords).length;
+            
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('learnedCount').textContent = learned;
+            document.getElementById('masteredCount').textContent = mastered;
+
+            // 更新学习页面的统计
+            updateStudyReady();
+        }
+
+        function updateStudyReady() {
+            const data = DB.getData();
+            const newCount = parseInt(document.getElementById('newCount').value);
+            const reviewCount = parseInt(document.getElementById('reviewCount').value);
+
+            // 新学：未学过的词
+            const unlearnedWords = data.words.filter(w => !data.learnedWords[w.word]);
+            // 复习：已学过但未掌握的词
+            const reviewableWords = data.words.filter(w => 
+                data.learnedWords[w.word] && !data.masteredWords[w.word]
+            );
+
+            const statsHtml = `
+                <p style="font-size: 14px; color: var(--text-secondary);">
+                    可新学单词：<strong style="color: var(--primary);">${unlearnedWords.length}</strong> 个<br>
+                    可复习单词：<strong style="color: var(--success);">${reviewableWords.length}</strong> 个
+                </p>
+            `;
+            document.getElementById('readyStats').innerHTML = statsHtml;
+
+            // 控制按钮状态
+            document.getElementById('btnStartNew').style.opacity = unlearnedWords.length > 0 ? '1' : '0.5';
+            document.getElementById('btnStartReview').style.opacity = reviewableWords.length > 0 ? '1' : '0.5';
+        }
+
+        function renderWordList(filter = 'all') {
+            const data = DB.getData();
+            let words = data.words;
+
+            if (filter === 'new') {
+                words = words.filter(w => !data.learnedWords[w.word]);
+            } else if (filter === 'wrong') {
+                words = words.filter(w => data.wrongWords[w.word] && data.wrongWords[w.word] >= 3);
+            } else if (filter === 'mastered') {
+                words = words.filter(w => data.masteredWords[w.word]);
+            }
+
+            const container = document.getElementById('wordList');
+
+            if (words.length === 0) {
+                const emptyText = {
+                    'all': '暂无单词',
+                    'new': '暂无生词',
+                    'wrong': '暂无错词',
+                    'mastered': '暂无已掌握单词'
+                };
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📚</div>
+                        <p>${emptyText[filter]}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = words.map(w => {
+                const wrongCount = data.wrongWords[w.word] || 0;
+                const streak = data.masteredWords[w.word] || 0;
+                const status = data.masteredWords[w.word] ? '✅' : (wrongCount >= 3 ? '❌' : '📖');
+                
+                return `
+                    <div class="word-item">
+                        <div class="word-info">
+                            <h4>${w.word}</h4>
+                            <p>${w.meaning}</p>
+                        </div>
+                        <div class="word-stats">
+                            <span>${status}</span>
+                            ${wrongCount > 0 ? `<br><span style="color: var(--danger);">错${wrongCount}次</span>` : ''}
+                            ${streak > 0 ? `<br><span class="streak">连对${streak}次</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== 学习流程 ====================
+        function startStudy(mode) {
+            const data = DB.getData();
+            studyState.mode = mode;
+            studyState.correctCount = 0;
+            studyState.wrongCount = 0;
+            studyState.currentIndex = 0;
+            studyState.phase = 0;
+            studyState.roundCorrect = {};
+            studyState.showingCard = false;
+
+            if (mode === 'new') {
+                // 新学：从未学过的词中选取
+                const unlearnedWords = shuffle(data.words.filter(w => !data.learnedWords[w.word]));
+                const count = Math.min(unlearnedWords.length, parseInt(document.getElementById('newCount').value));
+                studyState.wordQueue = unlearnedWords.slice(0, count);
+            } else {
+                // 复习：从已学但未掌握的词中选取
+                const reviewableWords = shuffle(data.words.filter(w => 
+                    data.learnedWords[w.word] && !data.masteredWords[w.word]
+                ));
+                const count = Math.min(reviewableWords.length, parseInt(document.getElementById('reviewCount').value));
+                studyState.wordQueue = reviewableWords.slice(0, count);
+            }
+
+            if (studyState.wordQueue.length === 0) {
+                showToast(mode === 'new' ? '没有可新学的单词' : '没有可复习的单词');
+                return;
+            }
+
+            // 初始化每轮的正确答案计数
+            studyState.wordQueue.forEach(w => {
+                studyState.roundCorrect[w.word] = 0;
+            });
+
+            // 更新日期
+            const today = getToday();
+            if (data.lastStudyDate !== today) {
+                data.lastStudyDate = today;
+                data.todayNewLearned = 0;
+                data.todayReviewed = 0;
+                DB.saveData(data);
+            }
+
+            // 切换到学习界面
+            document.getElementById('studyReady').classList.add('hidden');
+            document.getElementById('studyActive').classList.remove('hidden');
+            document.getElementById('studyComplete').classList.add('hidden');
+
+            // 开始学习
+            nextStudyStep();
+        }
+
+        function nextStudyStep() {
+            const queue = studyState.wordQueue;
+            
+            // 检查是否完成所有轮次
+            if (studyState.currentIndex >= queue.length) {
+                // 一轮结束，检查是否需要继续下一轮
+                const allCorrect = queue.every(w => studyState.roundCorrect[w.word] === 1);
+                
+                if (allCorrect) {
+                    // 所有单词本轮都答对了
+                    finishStudyPhase();
+                } else {
+                    // 重置索引，开始下一轮
+                    studyState.currentIndex = 0;
+                    queue.forEach(w => studyState.roundCorrect[w.word] = 0);
+                    
+                    // 新学模式：第1轮展示卡片，其他轮不展示
+                    if (studyState.mode === 'new' && studyState.phase === 0) {
+                        studyState.phase = 1;
+                    } else {
+                        // 继续下一phase或结束
+                        if (studyState.phase < 4) {
+                            studyState.phase++;
+                        } else {
+                            finishStudyPhase();
+                            return;
+                        }
+                    }
+                    
+                    nextStudyStep();
+                }
+                return;
+            }
+
+            const currentWord = queue[studyState.currentIndex];
+            
+            // 新学模式第1轮（展示卡片）
+            if (studyState.mode === 'new' && studyState.phase === 0) {
+                showWordCard(currentWord);
+                return;
+            }
+
+            // 生成选项并开始答题
+            showQuestion(currentWord);
+        }
+
+        function showWordCard(word) {
+            studyState.showingCard = true;
+            
+            const card = document.getElementById('wordCard');
+            const optionsArea = document.getElementById('optionsArea');
+            const modeBadge = document.getElementById('modeBadge');
+            
+            modeBadge.textContent = `新学 - 展示卡片 ${studyState.currentIndex + 1}/${studyState.wordQueue.length}`;
+            updateRoundIndicator();
+            updateProgress();
+
+            // 显示卡片
+            document.getElementById('displayWord').textContent = word.word;
+            document.getElementById('displayPhonetic').textContent = '/' + word.word + '/';
+            document.getElementById('displayMeaning').textContent = word.meaning;
+            document.getElementById('displayDefinition').textContent = word.definition;
+            document.getElementById('displayExample').textContent = word.example;
+            
+            card.classList.remove('hidden');
+            optionsArea.innerHTML = '';
+            document.getElementById('btnNextWord').classList.remove('hidden');
+            
+            // 自动朗读
+            speak(word.word);
+        }
+
+        function showQuestion(word) {
+            studyState.showingCard = false;
+            
+            const card = document.getElementById('wordCard');
+            const optionsArea = document.getElementById('optionsArea');
+            const modeBadge = document.getElementById('modeBadge');
+            const nextBtn = document.getElementById('btnNextWord');
+            
+            // 设置模式标签
+            const modeNames = ['英选中', '中选英', '英选义', '义选英'];
+            modeBadge.textContent = `${studyState.mode === 'new' ? '新学' : '复习'} - ${modeNames[studyState.phase - 1]} ${studyState.currentIndex + 1}/${studyState.wordQueue.length}`;
+            
+            updateRoundIndicator();
+            updateProgress();
+
+            // 生成选项
+            const data = DB.getData();
+            const otherWords = data.words.filter(w => w.word !== word.word);
+            const wrongOptions = shuffle(otherWords).slice(0, 3);
+            
+            let question, options, correctAnswer;
+
+            switch (studyState.phase) {
+                case 1: // 英选中
+                    question = word.word;
+                    options = shuffle([word.meaning, ...wrongOptions.map(w => w.meaning)]);
+                    correctAnswer = word.meaning;
+                    speak(word.word);
+                    break;
+                case 2: // 中选英
+                    question = word.meaning;
+                    options = shuffle([word.word, ...wrongOptions.map(w => w.word)]);
+                    correctAnswer = word.word;
+                    break;
+                case 3: // 英选义
+                    question = word.word;
+                    options = shuffle([word.definition, ...wrongOptions.map(w => w.definition)]);
+                    correctAnswer = word.definition;
+                    speak(word.word);
+                    break;
+                case 4: // 义选英
+                    question = word.definition;
+                    options = shuffle([word.word, ...wrongOptions.map(w => w.word)]);
+                    correctAnswer = word.word;
+                    break;
+            }
+
+            // 更新卡片显示
+            document.getElementById('displayWord').textContent = question;
+            document.getElementById('displayPhonetic').textContent = '';
+            document.getElementById('displayMeaning').textContent = '';
+            document.getElementById('displayDefinition').textContent = '';
+            document.getElementById('displayExample').textContent = '';
+            
+            // 隐藏卡片详情，保持布局
+            card.querySelector('.meaning, .definition, .example').forEach(el => {
+                el.style.visibility = 'hidden';
+            });
+            
+            // 渲染选项
+            optionsArea.innerHTML = options.map((opt, i) => `
+                <div class="option" data-answer="${opt}" data-correct="${opt === correctAnswer}">
+                    ${opt}
+                </div>
+            `).join('');
+            
+            nextBtn.classList.add('hidden');
+
+            // 绑定选项事件
+            optionsArea.querySelectorAll('.option').forEach(opt => {
+                opt.addEventListener('click', () => handleAnswer(opt, correctAnswer, word));
+            });
+        }
+
+        function handleAnswer(selectedEl, correctAnswer, word) {
+            const isCorrect = selectedEl.dataset.correct === 'true';
+            const options = document.querySelectorAll('.option');
+            
+            // 禁用所有选项
+            options.forEach(opt => {
+                opt.classList.add('disabled');
+                if (opt.dataset.correct === 'true') {
+                    opt.classList.add('correct');
+                }
+            });
+
+            if (isCorrect) {
+                studyState.correctCount++;
+                studyState.roundCorrect[word.word] = 1;
+                
+                // 更新掌握状态
+                const data = DB.getData();
+                const currentStreak = data.masteredWords[word.word] || 0;
+                
+                if (studyState.mode === 'new') {
+                    // 新学模式下答对，增加连续正确次数
+                    if (currentStreak < 12) {
+                        data.masteredWords[word.word] = currentStreak + 1;
+                        if (data.masteredWords[word.word] === 12) {
+                            showToast(`🎉 ${word.word} 已掌握！`);
+                        }
+                    }
+                    // 标记为已学过
+                    data.learnedWords[word.word] = true;
+                    data.todayNewLearned++;
+                } else {
+                    // 复习模式下答对
+                    if (!data.masteredWords[word.word]) {
+                        data.masteredWords[word.word] = 1;
+                    } else {
+                        data.masteredWords[word.word]++;
+                    }
+                    data.todayReviewed++;
+                }
+                
+                // 清除错词记录（如果之前有）
+                if (data.wrongWords[word.word]) {
+                    data.wrongWords[word.word] = 0;
+                }
+                
+                DB.saveData(data);
+            } else {
+                selectedEl.classList.add('wrong');
+                studyState.wrongCount++;
+                studyState.roundCorrect[word.word] = 0;
+                
+                // 记录错误
+                const data = DB.getData();
+                data.wrongWords[word.word] = (data.wrongWords[word.word] || 0) + 1;
+                // 重置连续正确次数
+                data.masteredWords[word.word] = 0;
+                DB.saveData(data);
+                
+                // 新学模式下展示卡片并重试
+                if (studyState.mode === 'new') {
+                    setTimeout(() => {
+                        showWordCard(word);
+                        studyState.showingCard = true;
+                    }, 800);
+                    return;
+                }
+            }
+
+            // 延迟后进入下一题
+            setTimeout(() => {
+                studyState.currentIndex++;
+                nextStudyStep();
+            }, 800);
+        }
+
+        function finishStudyPhase() {
+            // 检查是否完成所有学习
+            if (studyState.phase >= 4 || studyState.mode === 'review') {
+                // 学习完成
+                completeStudy();
+            } else {
+                // 进入下一阶段
+                studyState.phase++;
+                studyState.currentIndex = 0;
+                studyState.wordQueue.forEach(w => studyState.roundCorrect[w.word] = 0);
+                nextStudyStep();
+            }
+        }
+
+        function completeStudy() {
+            document.getElementById('studyActive').classList.add('hidden');
+            document.getElementById('studyComplete').classList.remove('hidden');
+
+            const total = studyState.correctCount + studyState.wrongCount;
+            const accuracy = total > 0 ? Math.round((studyState.correctCount / total) * 100) : 0;
+
+            document.getElementById('completeCorrect').textContent = studyState.correctCount;
+            document.getElementById('completeWrong').textContent = studyState.wrongCount;
+            document.getElementById('completeAccuracy').textContent = accuracy + '%';
+
+            const title = document.getElementById('completeTitle');
+            const subtitle = document.getElementById('completeSubtitle');
+
+            if (accuracy >= 90) {
+                title.textContent = '🌟 太棒了！';
+                subtitle.textContent = '正确率超过90%，继续保持！';
+            } else if (accuracy >= 70) {
+                title.textContent = '👍 不错哦！';
+                subtitle.textContent = '正确率超过70%，再接再厉！';
+            } else {
+                title.textContent = '💪 继续加油！';
+                subtitle.textContent = '多复习几遍，一定能掌握！';
+            }
+
+            updateStats();
+        }
+
+        function updateRoundIndicator() {
+            const indicator = document.getElementById('roundIndicator');
+            if (studyState.mode === 'new' && studyState.phase === 0) {
+                indicator.innerHTML = '<span class="round-dot active"></span>';
+            } else {
+                const dots = [];
+                for (let i = 1; i <= 4; i++) {
+                    let className = 'round-dot';
+                    if (i < studyState.phase) className += ' completed';
+                    else if (i === studyState.phase) className += ' active';
+                    dots.push(`<span class="${className}"></span>`);
+                }
+                indicator.innerHTML = dots.join('');
+            }
+        }
+
+        function updateProgress() {
+            const total = studyState.wordQueue.length;
+            const current = studyState.currentIndex + 1;
+            const percent = (current / total) * 100;
+            
+            document.getElementById('progressFill').style.width = percent + '%';
+            
+            const modeNames = ['展示卡片', '英选中', '中选英', '英选义', '义选英'];
+            const phaseName = studyState.mode === 'new' && studyState.phase === 0 ? '展示卡片' : modeNames[studyState.phase];
+            document.getElementById('progressText').textContent = `${phaseName} - ${current}/${total}`;
+        }
+
+        function backToStudyReady() {
+            document.getElementById('studyReady').classList.remove('hidden');
+            document.getElementById('studyActive').classList.add('hidden');
+            document.getElementById('studyComplete').classList.add('hidden');
+            updateStats();
+        }
+
+        // ==================== 文件导入 ====================
+        function handleFileUpload(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                parseAndPreview(content);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseAndPreview(content) {
+            const lines = content.split('\n').filter(line => line.trim());
+            const previewList = document.getElementById('previewList');
+            const previewArea = document.getElementById('previewArea');
+            const importResult = document.getElementById('importResult');
+            
+            const parsed = [];
+            const errors = [];
+            
+            lines.forEach((line, index) => {
+                const parts = line.split('|').map(p => p.trim());
+                if (parts.length >= 2) {
+                    parsed.push({
+                        word: parts[0] || '',
+                        meaning: parts[1] || '',
+                        definition: parts[2] || '',
+                        example: parts[3] || ''
+                    });
+                } else if (line.trim()) {
+                    errors.push({
+                        line: index + 1,
+                        content: line,
+                        reason: '格式错误：需要至少 英文|中文 两部分'
+                    });
+                }
+            });
+
+            // 显示预览
+            if (parsed.length > 0) {
+                previewArea.classList.remove('hidden');
+                previewList.innerHTML = parsed.slice(0, 20).map(w => `
+                    <div class="preview-item">
+                        <span class="word">${w.word}</span> - 
+                        <span class="meaning">${w.meaning}</span>
+                    </div>
+                `).join('');
+                
+                if (parsed.length > 20) {
+                    previewList.innerHTML += `<div class="preview-item" style="color: var(--text-secondary);">...还有 ${parsed.length - 20} 条</div>`;
+                }
+            }
+
+            // 显示导入结果
+            importResult.classList.remove('hidden');
+            let summaryHtml = `<p class="import-success">✅ 成功解析 ${parsed.length} 条</p>`;
+            if (errors.length > 0) {
+                summaryHtml += `<p class="import-fail">❌ 失败 ${errors.length} 条</p>`;
+                summaryHtml += errors.map(e => `<div class="error-detail">第${e.line}行: ${e.reason}</div>`).join('');
+            }
+            document.getElementById('importSummary').innerHTML = summaryHtml;
+
+            // 保存预览数据供确认导入
+            window.pendingImport = parsed;
+        }
+
+        function confirmImport() {
+            if (!window.pendingImport || window.pendingImport.length === 0) {
+                showToast('没有可导入的单词');
+                return;
+            }
+
+            const data = DB.getData();
+            let added = 0;
+            let skipped = 0;
+
+            window.pendingImport.forEach(newWord => {
+                const exists = data.words.some(w => w.word.toLowerCase() === newWord.word.toLowerCase());
+                if (exists) {
+                    skipped++;
+                } else {
+                    data.words.push(newWord);
+                    added++;
+                }
+            });
+
+            DB.saveData(data);
+            window.pendingImport = null;
+            
+            showToast(`导入完成：新增 ${added} 条，跳过 ${skipped} 条（重复）`);
+            updateStats();
+            
+            // 清空预览
+            document.getElementById('previewArea').classList.add('hidden');
+            document.getElementById('importResult').classList.add('hidden');
+            document.getElementById('previewList').innerHTML = '';
+        }
+
+        function loadBuiltInWords() {
+            const data = DB.getData();
+            let added = 0;
+
+            BUILTIN_WORDS.forEach(word => {
+                const exists = data.words.some(w => w.word.toLowerCase() === word.word.toLowerCase());
+                if (!exists) {
+                    data.words.push(word);
+                    added++;
+                }
+            });
+
+            DB.saveData(data);
+            showToast(`已加载 ${added} 个化学词汇`);
+            updateStats();
+        }
+
+        // ==================== 事件绑定 ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // 标签页切换
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById('page-' + tab.dataset.page).classList.add('active');
+                });
+            });
+
+            // 本子标签切换
+            document.querySelectorAll('.notebook-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.notebook-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    renderWordList(tab.dataset.book);
+                });
+            });
+
+            // 首页按钮
+            document.getElementById('btnNewStudy').addEventListener('click', () => {
+                document.querySelector('[data-page="study"]').click();
+                startStudy('new');
+            });
+
+            document.getElementById('btnReview').addEventListener('click', () => {
+                document.querySelector('[data-page="study"]').click();
+                startStudy('review');
+            });
+
+            // 学习页面按钮
+            document.getElementById('btnStartNew').addEventListener('click', () => startStudy('new'));
+            document.getElementById('btnStartReview').addEventListener('click', () => startStudy('review'));
+            document.getElementById('btnBackHome').addEventListener('click', backToStudyReady);
+
+            // 下一题按钮（展示卡片后）
+            document.getElementById('btnNextWord').addEventListener('click', () => {
+                if (studyState.showingCard) {
+                    studyState.currentIndex++;
+                    studyState.showingCard = false;
+                    nextStudyStep();
+                }
+            });
+
+            // 发音按钮
+            document.getElementById('speakerBtn').addEventListener('click', () => {
+                const word = document.getElementById('displayWord').textContent;
+                speak(word);
+            });
+
+            // 点击单词发音
+            document.getElementById('displayWord').addEventListener('click', () => {
+                const word = document.getElementById('displayWord').textContent;
+                speak(word);
+            });
+
+            // 重置进度
+            document.getElementById('btnResetProgress').addEventListener('click', () => {
+                if (confirm('确定要重置所有学习进度吗？')) {
+                    DB.resetProgress();
+                    showToast('学习进度已重置');
+                    updateStats();
+                }
+            });
+
+            // 清除数据
+            document.getElementById('btnClearData').addEventListener('click', () => {
+                if (confirm('确定要清除所有数据吗？此操作不可恢复！')) {
+                    DB.clearAll();
+                    showToast('所有数据已清除');
+                    updateStats();
+                }
+            });
+
+            // 文件上传
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--primary)';
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = 'var(--border)';
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--border)';
+                const file = e.dataTransfer.files[0];
+                if (file) handleFileUpload(file);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) handleFileUpload(file);
+            });
+
+            // 加载内置词书
+            document.getElementById('btnLoadBuiltIn').addEventListener('click', loadBuiltInWords);
+
+            // 初始化
+            updateStats();
+            
+            // 如果没有数据，自动加载内置词书
+            const data = DB.getData();
+            if (data.words.length === 0) {
+                loadBuiltInWords();
+            }
+        });
+    </script>
 </body>
 </html>
