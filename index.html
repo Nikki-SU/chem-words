@@ -595,7 +595,26 @@
                 }
             } else if (study.phase === 'types') {
                 const types = d.settings.types;
-                const currentType = types[study.typeIndex];
+                let currentType = types[study.typeIndex];
+                
+                // 学习模式下，题型阶段跳过英选中（第一阶段已做过）
+                if (study.mode === 'learn' && currentType === 1) {
+                    study.typeIndex++;
+                    if (study.typeIndex < types.length) {
+                        currentType = types[study.typeIndex];
+                    } else {
+                        // 所有题型完成，进入下一组
+                        study.groupIndex++;
+                        if (study.groupIndex < study.groups.length) {
+                            initGroup();
+                            renderStudy();
+                        } else {
+                            finishStudy();
+                        }
+                        return;
+                    }
+                }
+                
                 const typeNames = { 1: '英选中', 2: '中选英', 3: '英选义', 4: '义选英' };
                 html += `<div class="stage-hint">${typeNames[currentType]}</div>`;
                 const word = study.queue[study.idx];
@@ -685,24 +704,11 @@
         
         window.retryAfterCard = function() {
             if (!pendingWrong) return;
-            study.queue.push(pendingWrong.word);
+            // 清除待处理错误，保持在当前位置重做
             pendingWrong = null;
-            study.idx++;
             saveProgress();
-            if (study.idx < study.queue.length) {
-                renderStudy();
-            } else {
-                if (study.mode === 'learn' && study.phase === 'first') {
-                    study.phase = 'types';
-                    study.typeIndex = 0;
-                    study.queue = [...study.groups[study.groupIndex]];
-                    study.idx = 0;
-                    saveProgress();
-                    renderStudy();
-                } else {
-                    nextTypeOrGroup();
-                }
-            }
+            // 直接重新显示当前题目
+            renderStudy();
         };
         
         window.checkAnswer = function(selected, correct, type) {
@@ -769,6 +775,10 @@
                 renderStudy();
             } else {
                 study.typeIndex++;
+                // 学习模式下跳过英选中
+                if (study.mode === 'learn' && study.typeIndex < types.length && types[study.typeIndex] === 1) {
+                    study.typeIndex++;
+                }
                 if (study.typeIndex < types.length) {
                     study.queue = [...study.groups[study.groupIndex]];
                     study.idx = 0;
