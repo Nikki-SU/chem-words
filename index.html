@@ -433,7 +433,6 @@
             $('statLearned').textContent = s.learned;
             $('statMastered').textContent = s.mastered;
             $('wrongCount').textContent = s.wrong + ' 词';
-            $('wrongCount').parentElement.style.display = s.wrong > 0 ? 'flex' : 'none';
             $('btnReviewWrong').classList.toggle('hidden', s.wrong === 0);
             
             const d = getData();
