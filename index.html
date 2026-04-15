@@ -347,8 +347,8 @@
             <div class="header-title">添加单词</div>
         </div>
         <div class="card-section">
-            <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">格式：英文|中文|定义|例句（每行一个）</div>
-            <textarea class="text-input" id="addText" style="min-height:200px;" placeholder="apple|苹果|一种常见的水果|I eat an apple every day."></textarea>
+            <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">格式：单词|中文|定义（中）|定义（英）|例句（每行一个）</div>
+            <textarea class="text-input" id="addText" style="min-height:200px;" placeholder="apple|苹果|一种常见的圆形水果|A round fruit that is red or green|I eat an apple every day."></textarea>
         </div>
         <button class="btn btn-primary" id="btnConfirmAdd">确认添加</button>
     </div>
@@ -635,11 +635,13 @@
             
             if (pendingWrong) {
                 const word = pendingWrong.word;
+                const defHtml = (word.defCn ? `<div class="word-def">📖 ${word.defCn}</div>` : '') + 
+                                (word.defEn ? `<div class="word-def" style="font-size:13px;">📘 ${word.defEn}</div>` : '');
                 html += `
                     <div class="word-card">
                         <div class="word-en">${word.en}</div>
                         <div class="word-cn">${word.cn}</div>
-                        <div class="word-def">${word.def || ''}</div>
+                        ${defHtml}
                         <div class="word-ex">${word.ex || ''}</div>
                     </div>
                     <button class="btn btn-primary" onclick="retryAfterCard()">重做</button>
@@ -651,11 +653,13 @@
             if (study.mode === 'learn' && study.phase === 'first') {
                 if (study.showingCard) {
                     const word = study.queue[study.idx];
+                    const defHtml = (word.defCn ? `<div class="word-def">📖 ${word.defCn}</div>` : '') + 
+                                    (word.defEn ? `<div class="word-def" style="font-size:13px;">📘 ${word.defEn}</div>` : '');
                     html += `
                         <div class="word-card">
                             <div class="word-en">${word.en}</div>
                             <div class="word-cn">${word.cn}</div>
-                            <div class="word-def">${word.def || ''}</div>
+                            ${defHtml}
                             <div class="word-ex">${word.ex || ''}</div>
                         </div>
                         <button class="btn btn-primary" onclick="nextWord()">下一个</button>
@@ -714,21 +718,21 @@
                     correct = word.en;
                     break;
                 case 3:
-                    // 英选义：学习用中文义，复习用英文义（无英文义时用中文义）
+                    // 英选义：学习用中文定义，复习用英文定义
                     question = word.en;
-                    const def3 = (study.mode === 'review' && word.def) ? word.def : word.cn;
+                    const def3 = (study.mode === 'review' && word.defEn) ? word.defEn : (word.defCn || word.cn);
                     // 干扰项：同模式的定义
                     const othersDef3 = others.map(o => {
-                        if (study.mode === 'review' && o.def) return o.def;
-                        return o.cn;
+                        if (study.mode === 'review' && o.defEn) return o.defEn;
+                        return o.defCn || o.cn;
                     });
                     options = [def3, ...othersDef3].sort(() => Math.random() - 0.5);
                     correct = def3;
                     speak(word.en);
                     break;
                 case 4:
-                    // 义选英：学习用中文义，复习用英文义（无英文义时用中文义）
-                    const def4 = (study.mode === 'review' && word.def) ? word.def : word.cn;
+                    // 义选英：学习用中文定义，复习用英文定义
+                    const def4 = (study.mode === 'review' && word.defEn) ? word.defEn : (word.defCn || word.cn);
                     question = def4;
                     options = [word.en, ...others.map(o => o.en)].sort(() => Math.random() - 0.5);
                     correct = word.en;
@@ -911,14 +915,16 @@
         }
         
         // ========== 导入词书 ==========
+        // 词书格式：单词|中文|定义（中）|定义（英）|例句
         function parseWordLine(line) {
             const parts = line.split('|');
             if (parts.length < 2) return null;
             return {
                 en: parts[0].trim(),
                 cn: parts[1].trim(),
-                def: parts[2] ? parts[2].trim() : '',
-                ex: parts[3] ? parts[3].trim() : '',
+                defCn: parts[2] ? parts[2].trim() : '',  // 中文定义
+                defEn: parts[3] ? parts[3].trim() : '',  // 英文定义
+                ex: parts[4] ? parts[4].trim() : '',     // 例句
                 cardShown: false,
                 streak: 0,
                 wrongCount: 0,
@@ -1023,13 +1029,13 @@
             const maxCount = count + 5;
             return `请从以下文献中提取${minCount}-${maxCount}个专业词汇和术语，要求：
 1. 只提取专业术语，不要提取日常词汇（如the, is, are等）
-2. 每个词汇提供：英文|中文翻译|中英文定义各一句|例句（来自原文或自造）
-3. 格式严格为：英文|中文|英文定义|例句
+2. 每个词汇必须包含：单词|中文翻译|中文定义|英文定义|例句
+3. 格式严格为：单词|中文|定义（中）|定义（英）|例句
 4. ${field ? '专业领域：' + field : ''}
 5. 按重要性排序
 
 示例格式：
-perovskite|钙钛矿|A crystalline material with the formula ABX3, widely used in solar cells.|Perovskite solar cells have achieved efficiency over 25%.
+perovskite|钙钛矿|一种具有ABX3晶体结构的材料，广泛应用于太阳能电池领域。|A crystalline material with the formula ABX3, widely used in solar cells.|Perovskite solar cells have achieved efficiency over 25%.
 
 请直接输出词汇列表，不要其他解释。`;
         }
@@ -1271,8 +1277,8 @@ perovskite|钙钛矿|A crystalline material with the formula ABX3, widely used i
             // 导入提取结果
             $('btnImportResult').onclick = function() {
                 if (extractedWords.length === 0) return;
-                // 转换为词书格式文本
-                const text = extractedWords.map(w => `${w.en}|${w.cn}|${w.def || ''}|${w.ex || ''}`).join('\n');
+                // 转换为词书格式文本：单词|中文|定义（中）|定义（英）|例句
+                const text = extractedWords.map(w => `${w.en}|${w.cn}|${w.defCn || ''}|${w.defEn || ''}|${w.ex || ''}`).join('\n');
                 const result = importWords(text, '文献提取词书');
                 let msg = `导入成功：${result.added} 词`;
                 if (result.mastered > 0) msg += `，跳过已掌握：${result.mastered} 词`;
