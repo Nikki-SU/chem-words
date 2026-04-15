@@ -126,7 +126,7 @@
         <button class="btn btn-success" id="btnStartReview">开始复习</button>
         <button class="btn btn-warning hidden" id="btnReviewWrong">复习错词本</button>
         <div class="word-list" style="margin-top:16px;">
-            <div class="word-item"><span>错词本</span><span id="wrongCount">0 词</span></div>
+            <div class="word-item" id="btnWrongList" style="cursor:pointer;"><span>错词本</span><span id="wrongCount">0 词</span></div>
         </div>
     </div>
     
@@ -328,6 +328,18 @@
         <div id="masteredList"></div>
     </div>
     
+    <!-- 错词本页 -->
+    <div id="pageWrong" class="page">
+        <div class="header">
+            <button class="header-back" id="btnBackWrong">←</button>
+            <div class="header-title">错词本</div>
+        </div>
+        <div style="padding:16px;background:var(--card);margin:16px;border-radius:12px;font-size:13px;color:var(--text-light);">
+            错误次数 ≥ 3 的单词会自动进入错词本。掌握后会自动移出。
+        </div>
+        <div id="wrongList"></div>
+    </div>
+    
     <!-- 手动添加页 -->
     <div id="pageAdd" class="page">
         <div class="header">
@@ -464,12 +476,21 @@
             const savedProgress = d.progress;
             let shouldResume = false;
             
-            if (savedProgress && savedProgress.mode === mode) {
+            if (savedProgress && savedProgress.mode === mode && savedProgress.wrongOnly === wrongOnly) {
                 const savedWordEns = savedProgress.wordEns || [];
                 const currentWordEns = words.map(w => w.en);
                 if (savedWordEns.length === currentWordEns.length && 
                     savedWordEns.every((en, i) => en === currentWordEns[i])) {
                     shouldResume = true;
+                }
+            }
+            
+            // 学习模式：检查是否所有词都已展示过卡片
+            let shouldStartFromTypes = false;
+            if (mode === 'learn') {
+                const allCardShown = words.every(w => w.cardShown);
+                if (allCardShown) {
+                    shouldStartFromTypes = true;
                 }
             }
             
@@ -479,7 +500,7 @@
                 allWords: words,
                 groups: groups,
                 groupIndex: 0,
-                phase: mode === 'learn' ? 'first' : 'types',
+                phase: (mode === 'learn' && !shouldStartFromTypes) ? 'first' : 'types',
                 typeIndex: 0,
                 queue: [],
                 idx: 0,
@@ -496,6 +517,22 @@
                 if (savedProgress.queueEns) {
                     study.queue = savedProgress.queueEns.map(en => words.find(w => w.en === en)).filter(w => w);
                 }
+                
+                // 恢复pendingWrong状态
+                if (savedProgress.pendingWrongEn) {
+                    const wrongWord = words.find(w => w.en === savedProgress.pendingWrongEn);
+                    if (wrongWord) {
+                        pendingWrong = { word: wrongWord, type: savedProgress.pendingWrongType || 1 };
+                    }
+                }
+                
+                // 学习模式下，题型阶段跳过英选中
+                if (study.mode === 'learn' && study.phase === 'types' && study.typeIndex < d.settings.types.length) {
+                    if (d.settings.types[study.typeIndex] === 1) {
+                        study.typeIndex++;
+                    }
+                }
+                
                 if (study.queue.length === 0) initGroup();
                 toast('继续上次进度');
             } else {
@@ -519,7 +556,9 @@
                 typeIndex: study.typeIndex,
                 idx: study.idx,
                 queueEns: study.queue.map(w => w.en),
-                showingCard: study.showingCard
+                showingCard: study.showingCard,
+                pendingWrongEn: pendingWrong ? pendingWrong.word.en : null,
+                pendingWrongType: pendingWrong ? pendingWrong.type : null
             };
             saveData(d);
         }
@@ -533,17 +572,49 @@
         function initGroup() {
             const currentGroup = study.groups[study.groupIndex];
             study.wrongQueue = [];
-            if (study.mode === 'learn') {
-                study.phase = 'first';
-                study.queue = [...currentGroup];
+            
+            if (study.mode === 'learn' && study.phase === 'first') {
+                // 只把未展示过卡片的词放入队列
+                study.queue = currentGroup.filter(w => !w.cardShown);
                 study.idx = 0;
                 study.showingCard = false;
+                
+                // 如果这一组所有词都展示过卡片了，直接进入题型阶段
+                if (study.queue.length === 0) {
+                    study.phase = 'types';
+                    study.typeIndex = 0;
+                    // 跳过英选中
+                    const d = getData();
+                    if (d.settings.types[0] === 1) {
+                        study.typeIndex = 1;
+                    }
+                    if (study.typeIndex >= d.settings.types.length) {
+                        // 没有其他题型了，进入下一组
+                        study.groupIndex++;
+                        if (study.groupIndex < study.groups.length) {
+                            initGroup();
+                        } else {
+                            finishStudy();
+                        }
+                        return;
+                    }
+                    study.queue = [...currentGroup];
+                    study.idx = 0;
+                }
             } else {
                 study.phase = 'types';
                 study.typeIndex = 0;
+                // 学习模式跳过英选中
+                if (study.mode === 'learn') {
+                    const d = getData();
+                    if (d.settings.types[0] === 1) {
+                        study.typeIndex = 1;
+                    }
+                }
                 study.queue = [...currentGroup];
                 study.idx = 0;
             }
+            
             saveProgress();
         }
         
@@ -899,6 +970,20 @@
             }
         };
         
+        // ========== 错词本 ==========
+        function renderWrongList() {
+            const d = getData();
+            let words = d.words.filter(w => classify(w, d.settings) === 'wrong');
+            words.sort((a, b) => (b.wrongCount || 0) - (a.wrongCount || 0));
+            let html = '<div class="word-list">';
+            words.forEach(w => {
+                html += `<div class="word-item"><div class="word-info"><h4>${w.en} <span class="tag tag-wrong">错${w.wrongCount}次</span></h4><p>${w.cn}</p></div></div>`;
+            });
+            html += '</div>';
+            if (words.length === 0) html = '<div style="text-align:center;padding:40px;color:var(--text-light);">暂无错词</div>';
+            $('wrongList').innerHTML = html;
+        }
+        
         // ========== 文献提取词书 ==========
         let extractedWords = [];
         
@@ -1055,6 +1140,13 @@ perovskite|钙钛矿|A crystalline material with the formula ABX3, widely used i
             $('btnBackSettings').onclick = () => showPage('settings');
             $('btnBackAdd').onclick = () => showPage('settings');
             $('btnBackExtract').onclick = () => showPage('settings');
+            $('btnBackWrong').onclick = () => { showPage('home'); updateStats(); };
+            
+            // 错词本
+            $('btnWrongList').onclick = () => {
+                showPage('wrong');
+                renderWrongList();
+            };
             
             // 上传词书
             $('btnUpload').onclick = () => $('fileInput').click();
