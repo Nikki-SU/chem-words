@@ -253,8 +253,8 @@
         
         function getData() {
             let d = localStorage.getItem(KEY);
-            if (!d) return { words: [], settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4] } };
-            try { return JSON.parse(d); } catch(e) { return { words: [], settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4] } }; }
+            if (!d) return { words: [], settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4] }, progress: null };
+            try { return JSON.parse(d); } catch(e) { return { words: [], settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4] }, progress: null }; }
         }
         
         function saveData(d) { localStorage.setItem(KEY, JSON.stringify(d)); }
@@ -355,26 +355,88 @@
             // 按10个一组切分
             const groups = chunkWords(words, GROUP_SIZE);
             
+            // 检查是否有保存的进度
+            const savedProgress = d.progress;
+            let shouldResume = false;
+            
+            if (savedProgress && savedProgress.mode === mode) {
+                // 检查是否是同一个学习任务（单词列表是否一致）
+                const savedWordEns = savedProgress.wordEns || [];
+                const currentWordEns = words.map(w => w.en);
+                
+                // 如果单词列表一致，且进度未完成，则恢复
+                if (savedWordEns.length === currentWordEns.length && 
+                    savedWordEns.every((en, i) => en === currentWordEns[i])) {
+                    shouldResume = true;
+                }
+            }
+            
             study = {
                 mode: mode,
                 wrongOnly: wrongOnly || false,
                 allWords: words,
                 groups: groups,
-                groupIndex: 0,        // 当前第几组
-                phase: mode === 'learn' ? 'first' : 'types', // learn: first(英选中+卡片) -> types; review: types
-                typeIndex: 0,         // 当前题型索引
-                queue: [],            // 当前阶段的单词队列
-                idx: 0,               // 队列中的位置
-                wrongQueue: [],       // 错误队列
-                showingCard: false    // 是否正在显示卡片
+                groupIndex: 0,
+                phase: mode === 'learn' ? 'first' : 'types',
+                typeIndex: 0,
+                queue: [],
+                idx: 0,
+                wrongQueue: [],
+                showingCard: false
             };
             
-            // 初始化第一组
-            initGroup();
+            if (shouldResume && savedProgress) {
+                // 恢复进度
+                study.groupIndex = savedProgress.groupIndex || 0;
+                study.phase = savedProgress.phase || study.phase;
+                study.typeIndex = savedProgress.typeIndex || 0;
+                study.idx = savedProgress.idx || 0;
+                study.showingCard = savedProgress.showingCard || false;
+                
+                // 恢复队列
+                if (savedProgress.queueEns) {
+                    study.queue = savedProgress.queueEns.map(en => words.find(w => w.en === en)).filter(w => w);
+                }
+                
+                if (study.queue.length === 0) {
+                    initGroup();
+                }
+                
+                toast('继续上次进度');
+            } else {
+                // 新开始，初始化第一组
+                initGroup();
+            }
             
             showPage('study');
             $('studyTitle').textContent = mode === 'learn' ? '学习' : '复习';
             renderStudy();
+        }
+        
+        // 保存当前进度
+        function saveProgress() {
+            if (!study) return;
+            
+            const d = getData();
+            d.progress = {
+                mode: study.mode,
+                wrongOnly: study.wrongOnly,
+                wordEns: study.allWords.map(w => w.en),
+                groupIndex: study.groupIndex,
+                phase: study.phase,
+                typeIndex: study.typeIndex,
+                idx: study.idx,
+                queueEns: study.queue.map(w => w.en),
+                showingCard: study.showingCard
+            };
+            saveData(d);
+        }
+        
+        // 清除进度
+        function clearProgress() {
+            const d = getData();
+            d.progress = null;
+            saveData(d);
         }
         
         function initGroup() {
@@ -393,6 +455,9 @@
                 study.queue = [...currentGroup];
                 study.idx = 0;
             }
+            
+            // 保存进度
+            saveProgress();
         }
         
         function renderStudy() {
@@ -535,6 +600,8 @@
             study.idx++;
             study.showingCard = false;
             
+            saveProgress(); // 保存进度
+            
             if (study.idx < study.queue.length) {
                 renderStudy();
             } else {
@@ -552,6 +619,7 @@
                 }
                 study.wrongQueue = [];
                 
+                saveProgress(); // 保存进度
                 renderStudy();
             }
         };
@@ -572,6 +640,8 @@
             // 继续下一个题目
             study.idx++;
             
+            saveProgress(); // 保存进度
+            
             if (study.idx < study.queue.length) {
                 renderStudy();
             } else {
@@ -582,6 +652,7 @@
                     study.typeIndex = 0;
                     study.queue = [...study.groups[study.groupIndex]];
                     study.idx = 0;
+                    saveProgress();
                     renderStudy();
                 } else {
                     nextTypeOrGroup();
@@ -621,16 +692,19 @@
                     if (isCorrect) {
                         // 正确，显示卡片
                         study.showingCard = true;
+                        saveProgress();
                         renderStudy();
                     } else {
                         // 错误：设置待处理错误，先显示卡片
                         pendingWrong = { word: word, type: 1 };
+                        saveProgress();
                         renderStudy();
                     }
                 } else {
                     // 题型阶段
                     if (isCorrect) {
                         study.idx++;
+                        saveProgress();
                         if (study.idx < study.queue.length) {
                             renderStudy();
                         } else {
@@ -639,6 +713,7 @@
                     } else {
                         // 错误：设置待处理错误，先显示卡片
                         pendingWrong = { word: word, type: type };
+                        saveProgress();
                         renderStudy();
                     }
                 }
@@ -671,6 +746,7 @@
                 study.queue = study.wrongQueue.map(item => item.word);
                 study.idx = 0;
                 study.wrongQueue = [];
+                saveProgress();
                 renderStudy();
             } else {
                 // 当前题型完成，进入下一题型
@@ -680,13 +756,14 @@
                     // 还有题型
                     study.queue = [...study.groups[study.groupIndex]];
                     study.idx = 0;
+                    saveProgress();
                     renderStudy();
                 } else {
                     // 所有题型完成，进入下一组
                     study.groupIndex++;
                     
                     if (study.groupIndex < study.groups.length) {
-                        initGroup();
+                        initGroup(); // initGroup内部会调用saveProgress
                         renderStudy();
                     } else {
                         finishStudy();
@@ -720,6 +797,8 @@
             study.idx++;
             toast('已掌握！');
             
+            saveProgress(); // 保存进度
+            
             if (study.idx < study.queue.length) {
                 renderStudy();
             } else {
@@ -728,6 +807,7 @@
                     study.typeIndex = 0;
                     study.queue = [...study.groups[study.groupIndex]];
                     study.idx = 0;
+                    saveProgress();
                     renderStudy();
                 } else {
                     nextTypeOrGroup();
@@ -736,6 +816,7 @@
         };
         
         function finishStudy() {
+            clearProgress(); // 清除进度
             toast('学习完成！');
             updateStats();
             setTimeout(() => { showPage('home'); }, 1000);
