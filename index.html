@@ -714,18 +714,21 @@
                     correct = word.en;
                     break;
                 case 3:
+                    // 英选义：学习用中文义，复习用英文义（无英文义时用中文义）
                     question = word.en;
-                    // 学习用中文义，复习用英文义
                     const def3 = (study.mode === 'review' && word.def) ? word.def : word.cn;
-                    const othersDef3 = others.map(o => (study.mode === 'review' && o.def) ? o.def : o.cn);
+                    // 干扰项：同模式的定义
+                    const othersDef3 = others.map(o => {
+                        if (study.mode === 'review' && o.def) return o.def;
+                        return o.cn;
+                    });
                     options = [def3, ...othersDef3].sort(() => Math.random() - 0.5);
                     correct = def3;
                     speak(word.en);
                     break;
                 case 4:
-                    // 学习用中文义，复习用英文义
+                    // 义选英：学习用中文义，复习用英文义（无英文义时用中文义）
                     const def4 = (study.mode === 'review' && word.def) ? word.def : word.cn;
-                    const othersDef4 = others.map(o => (study.mode === 'review' && o.def) ? o.def : o.cn);
                     question = def4;
                     options = [word.en, ...others.map(o => o.en)].sort(() => Math.random() - 0.5);
                     correct = word.en;
@@ -926,19 +929,33 @@
         function importWords(text, bookName) {
             const lines = text.split('\n').filter(l => l.trim());
             const d = getData();
-            let added = 0;
+            let added = 0, skipped = 0, mastered = 0;
             lines.forEach(line => {
                 const w = parseWordLine(line);
-                if (w && !d.words.some(x => x.en.toLowerCase() === w.en.toLowerCase())) {
-                    d.words.push(w);
-                    added++;
+                if (!w) return;
+                
+                const existing = d.words.find(x => x.en.toLowerCase() === w.en.toLowerCase());
+                if (existing) {
+                    // 已存在，检查是否在已掌握库
+                    if (classify(existing, d.settings) === 'mastered') {
+                        mastered++;
+                    } else {
+                        skipped++;
+                    }
+                    return;
                 }
+                
+                d.words.push(w);
+                added++;
             });
+            
             if (added > 0) {
                 d.bookName = bookName || '词书';
                 saveData(d);
             }
-            return added;
+            
+            // 返回详细统计
+            return { added, skipped, mastered };
         }
         
         // ========== 已掌握库 ==========
@@ -1155,8 +1172,11 @@ perovskite|钙钛矿|A crystalline material with the formula ABX3, widely used i
                 if (!file) return;
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const added = importWords(e.target.result, file.name.replace('.txt', ''));
-                    toast(`导入成功：${added} 词`);
+                    const result = importWords(e.target.result, file.name.replace('.txt', ''));
+                    let msg = `导入成功：${result.added} 词`;
+                    if (result.mastered > 0) msg += `，跳过已掌握：${result.mastered} 词`;
+                    if (result.skipped > 0) msg += `，已存在：${result.skipped} 词`;
+                    toast(msg);
                     updateStats();
                 };
                 reader.readAsText(file);
@@ -1166,8 +1186,11 @@ perovskite|钙钛矿|A crystalline material with the formula ABX3, widely used i
             $('btnConfirmAdd').onclick = function() {
                 const text = $('addText').value;
                 if (!text.trim()) { toast('请输入单词'); return; }
-                const added = importWords(text, '手动录入');
-                toast(`添加成功：${added} 词`);
+                const result = importWords(text, '手动录入');
+                let msg = `添加成功：${result.added} 词`;
+                if (result.mastered > 0) msg += `，跳过已掌握：${result.mastered} 词`;
+                if (result.skipped > 0) msg += `，已存在：${result.skipped} 词`;
+                toast(msg);
                 $('addText').value = '';
                 updateStats();
             };
@@ -1248,17 +1271,13 @@ perovskite|钙钛矿|A crystalline material with the formula ABX3, widely used i
             // 导入提取结果
             $('btnImportResult').onclick = function() {
                 if (extractedWords.length === 0) return;
-                const d = getData();
-                let added = 0;
-                extractedWords.forEach(w => {
-                    if (!d.words.some(x => x.en.toLowerCase() === w.en.toLowerCase())) {
-                        d.words.push(w);
-                        added++;
-                    }
-                });
-                d.bookName = '文献提取词书';
-                saveData(d);
-                toast(`导入成功：${added} 词`);
+                // 转换为词书格式文本
+                const text = extractedWords.map(w => `${w.en}|${w.cn}|${w.def || ''}|${w.ex || ''}`).join('\n');
+                const result = importWords(text, '文献提取词书');
+                let msg = `导入成功：${result.added} 词`;
+                if (result.mastered > 0) msg += `，跳过已掌握：${result.mastered} 词`;
+                if (result.skipped > 0) msg += `，已存在：${result.skipped} 词`;
+                toast(msg);
                 updateStats();
                 $('resultSection').classList.add('hidden');
                 extractedWords = [];
