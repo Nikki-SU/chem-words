@@ -175,6 +175,10 @@
                 <button class="btn-small btn-primary" id="btnExtractWords">AI提取</button>
             </div>
             <div class="setting-row">
+                <span class="setting-label">从学术站同步词汇</span>
+                <button class="btn-small btn-primary" id="btnSyncFromAcademic">🔄 同步</button>
+            </div>
+            <div class="setting-row">
                 <span class="setting-label">词书数量</span>
                 <span class="setting-value" id="bookCount">0 词</span>
             </div>
@@ -576,6 +580,50 @@
                 const u = new SpeechSynthesisUtterance(text);
                 u.lang = 'en-US';
                 speechSynthesis.speak(u);
+            }
+        }
+        
+        // 从学术站同步词汇
+        function syncFromAcademic() {
+            try {
+                // 从localStorage读取学术站词汇数据
+                const vocabData = localStorage.getItem('vocabularyData');
+                if (!vocabData) {
+                    toast('学术站暂无词汇数据');
+                    return;
+                }
+                
+                const academicWords = JSON.parse(vocabData);
+                if (!academicWords || academicWords.length === 0) {
+                    toast('学术站词汇本为空');
+                    return;
+                }
+                
+                // 转换为背单词App格式
+                const wordsToImport = academicWords.map(w => ({
+                    en: w.en || w.word || '',
+                    cn: w.cn || w.word_cn || '',
+                    defCn: w.defCn || w.definition_cn || '',
+                    defEn: w.defEn || w.definition_en || '',
+                    ex: w.ex || w.example || ''
+                })).filter(w => w.en);
+                
+                if (wordsToImport.length === 0) {
+                    toast('没有有效词汇可同步');
+                    return;
+                }
+                
+                // 导入到academic词书
+                const result = window.vocabApp.importToBook('academic', wordsToImport, '学术站词汇');
+                
+                toast(`同步完成！新增: ${result.added}, 跳过: ${result.skipped}, 已掌握: ${result.mastered}`);
+                
+                // 切换到academic词书
+                window.location.href = '?book=academic';
+                
+            } catch (error) {
+                console.error('同步失败:', error);
+                toast('同步失败: ' + error.message);
             }
         }
         
@@ -1429,6 +1477,11 @@ photovoltaic|光伏的|与光生电效应相关的，指将光能直接转换为
                 showPage('extract');
                 updatePromptBox();
                 loadApiConfig();
+            };
+            
+            // 从学术站同步词汇
+            $('btnSyncFromAcademic').onclick = function() {
+                syncFromAcademic();
             };
             
             // API提供商选择
