@@ -2,303 +2,852 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>背单词</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        :root { --primary: #4A90D9; --success: #52C41A; --danger: #FF6B6B; --warning: #FFA940; --bg: #F5F7FA; --card: #FFFFFF; --text: #333; --text-light: #999; --border: #E8E8E8; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; max-width: 480px; margin: 0 auto; padding-bottom: 70px; }
-        .page { display: none; padding: 16px; min-height: calc(100vh - 70px); }
+        :root {
+            --primary: #4A90D9; --success: #52C41A; --danger: #FF6B6B; --warning: #FAAD14;
+            --bg: #F5F7FA; --card: #FFFFFF; --text: #333; --text-light: #999; --border: #E8E8E8;
+        }
+        body { font-family: -apple-system, BlinkMacSystemSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; max-width: 480px; margin: 0 auto; }
+        
+        /* 页面 */
+        .page { display: none; padding: 16px; padding-bottom: 80px; }
         .page.active { display: block; }
-        .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--primary); color: white; position: sticky; top: 0; z-index: 100; }
-        .header-back { width: 40px; height: 40px; border: none; background: transparent; color: white; font-size: 20px; cursor: pointer; display: none; }
-        .header-back.show { display: block; }
-        .header h1 { font-size: 18px; font-weight: 500; }
+        
+        /* 头部 */
+        .header { background: var(--primary); color: white; padding: 16px; text-align: center; position: sticky; top: 0; z-index: 100; }
+        .header-title { font-size: 18px; font-weight: 600; }
+        .header-back { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        
+        /* 导航 */
         .nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; display: flex; background: var(--card); border-top: 1px solid var(--border); z-index: 100; }
-        .nav-item { flex: 1; padding: 8px 4px; text-align: center; border: none; background: transparent; color: var(--text-light); font-size: 11px; cursor: pointer; }
+        .nav-item { flex: 1; padding: 10px 4px; text-align: center; background: none; border: none; color: var(--text-light); font-size: 12px; cursor: pointer; }
         .nav-item.active { color: var(--primary); }
-        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
-        .stat-item { background: var(--card); border-radius: 12px; padding: 12px 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .nav-icon { font-size: 20px; margin-bottom: 2px; }
+        
+        /* 统计卡片 */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); border-radius: 12px; padding: 14px 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .stat-num { font-size: 24px; font-weight: 700; color: var(--primary); }
         .stat-label { font-size: 11px; color: var(--text-light); margin-top: 4px; }
-        .btn { display: block; width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 12px; }
+        
+        /* 按钮 */
+        .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 12px; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
         .btn-warning { background: var(--warning); color: white; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-small { padding: 8px 16px; width: auto; font-size: 14px; }
+        
+        /* 单词卡片 */
         .word-card { background: var(--card); border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 16px; }
-        .word-text { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
-        .word-meaning { font-size: 18px; color: var(--text); padding: 12px; background: var(--bg); border-radius: 8px; margin-top: 16px; }
-        .options { display: grid; gap: 10px; }
-        .option { padding: 14px 16px; background: var(--card); border: 2px solid var(--border); border-radius: 10px; font-size: 15px; text-align: left; cursor: pointer; }
+        .word-en { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .word-cn { font-size: 20px; color: var(--text); margin-bottom: 12px; }
+        .word-def { font-size: 14px; color: var(--text-light); margin-bottom: 8px; padding: 10px; background: var(--bg); border-radius: 8px; }
+        .word-ex { font-size: 13px; color: var(--text-light); font-style: italic; line-height: 1.5; }
+        
+        /* 选项 */
+        .options { display: flex; flex-direction: column; gap: 10px; }
+        .option { padding: 16px; background: var(--card); border: 2px solid var(--border); border-radius: 12px; font-size: 16px; text-align: left; cursor: pointer; transition: all 0.2s; }
         .option:active { transform: scale(0.98); }
-        .option.correct { border-color: var(--success); background: #f6ffed; color: var(--success); }
-        .option.wrong { border-color: var(--danger); background: #fff2f0; color: var(--danger); }
+        .option.correct { border-color: var(--success); background: #f6ffed; }
+        .option.wrong { border-color: var(--danger); background: #fff2f0; }
         .option.disabled { pointer-events: none; opacity: 0.6; }
-        .progress-bar { height: 6px; background: var(--border); border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.3s; }
+        
+        /* 进度条 */
+        .progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 20px; }
+        .progress-fill { height: 100%; background: var(--primary); border-radius: 2px; transition: width 0.3s; }
+        
+        /* 设置项 */
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
+        .setting-row:last-child { border-bottom: none; }
+        .setting-label { font-size: 15px; }
+        .setting-value { color: var(--text-light); font-size: 14px; }
+        
+        /* 开关 */
+        .switch { position: relative; width: 48px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; border-radius: 28px; transition: 0.3s; }
+        .slider:before { content: ""; position: absolute; height: 22px; width: 22px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+        input:checked + .slider { background: var(--primary); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        
+        /* 选择按钮组 */
+        .select-group { display: flex; flex-wrap: wrap; gap: 8px; }
+        .select-btn { padding: 8px 16px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); font-size: 14px; cursor: pointer; }
+        .select-btn.active { border-color: var(--primary); background: var(--primary); color: white; }
+        
+        /* 上传区域 */
+        .upload-area { border: 2px dashed var(--border); border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 16px; cursor: pointer; }
+        .upload-area:hover { border-color: var(--primary); }
+        
+        /* 单词列表 */
         .word-list { background: var(--card); border-radius: 12px; overflow: hidden; }
-        .word-item { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .word-item { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .word-item:last-child { border-bottom: none; }
-        .word-info h3 { font-size: 16px; margin-bottom: 4px; }
-        .word-info p { font-size: 13px; color: var(--text-light); }
-        .word-status { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
-        .status-new { background: #e6f7ff; color: var(--primary); }
-        .status-learning { background: #fff7e6; color: var(--warning); }
-        .status-learned { background: #f6ffed; color: var(--success); }
-        .status-mastered { background: #722ed1; color: white; }
-        .status-wrong { background: #fff2f0; color: var(--danger); }
-        .setting-group { background: var(--card); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
-        .setting-item { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .setting-item:last-child { border-bottom: none; }
-        .setting-select { padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; }
-        .toggle { width: 48px; height: 28px; border-radius: 14px; border: none; background: var(--border); position: relative; cursor: pointer; }
-        .toggle.active { background: var(--primary); }
-        .toggle::after { content: ''; position: absolute; width: 24px; height: 24px; border-radius: 12px; background: white; top: 2px; left: 2px; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        .toggle.active::after { transform: translateX(20px); }
-        .upload-area { border: 2px dashed var(--border); border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; }
-        .upload-area input { display: none; }
-        .complete-page { text-align: center; padding-top: 60px; }
-        .complete-icon { font-size: 80px; margin-bottom: 20px; }
-        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-light); }
-        .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 1000; }
+        .word-info h4 { font-size: 15px; margin-bottom: 2px; }
+        .word-info p { font-size: 12px; color: var(--text-light); }
+        
+        /* 搜索框 */
+        .search-box { display: flex; gap: 8px; margin-bottom: 16px; }
+        .search-input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
+        .search-input:focus { border-color: var(--primary); }
+        
+        /* 标签 */
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        .tag-new { background: #e6f7ff; color: var(--primary); }
+        .tag-learning { background: #fff7e6; color: var(--warning); }
+        .tag-learned { background: #f6ffed; color: var(--success); }
+        .tag-mastered { background: #f9f0ff; color: #722ed1; }
+        .tag-wrong { background: #fff1f0; color: var(--danger); }
+        
+        /* Toast */
+        .toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.75); color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 1000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .toast.show { opacity: 1; }
+        
+        /* 题型提示 */
+        .stage-hint { font-size: 13px; color: var(--text-light); margin-bottom: 12px; text-align: center; }
+        
+        /* 隐藏 */
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <header class="header">
-        <button class="header-back" id="backBtn">←</button>
-        <h1 id="pageTitle">背单词</h1>
-        <div style="width: 40px;"></div>
-    </header>
-    
-    <div class="page active" id="page-home">
-        <div class="stats" id="stats"></div>
-        <button class="btn btn-primary" id="btnStudy">🎯 开始新学</button>
-        <button class="btn btn-success" id="btnReview">📝 开始复习</button>
-        <button class="btn btn-warning" id="btnWrongReview">🔄 复习错题</button>
+    <!-- 首页 -->
+    <div id="pageHome" class="page active">
+        <div class="header"><div class="header-title">背单词</div></div>
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-num" id="statNew">0</div><div class="stat-label">新词</div></div>
+            <div class="stat-card"><div class="stat-num" id="statLearning">0</div><div class="stat-label">正在学</div></div>
+            <div class="stat-card"><div class="stat-num" id="statLearned">0</div><div class="stat-label">已学</div></div>
+            <div class="stat-card"><div class="stat-num" id="statMastered">0</div><div class="stat-label">已掌握</div></div>
+        </div>
+        <button class="btn btn-primary" id="btnStartLearn">开始学习</button>
+        <button class="btn btn-success" id="btnStartReview">开始复习</button>
+        <button class="btn btn-warning hidden" id="btnReviewWrong">复习错词本</button>
+        <div class="word-list" style="margin-top:16px;">
+            <div class="word-item"><span>错词本</span><span id="wrongCount">0 词</span></div>
+        </div>
     </div>
     
-    <div class="page" id="page-study">
-        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+    <!-- 学习页 -->
+    <div id="pageStudy" class="page">
+        <div class="header">
+            <button class="header-back" id="btnBackHome">←</button>
+            <div class="header-title" id="studyTitle">学习</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
         <div id="studyContent"></div>
     </div>
     
-    <div class="page" id="page-complete">
-        <div class="complete-page">
-            <div class="complete-icon">🎉</div>
-            <h2 style="margin-bottom: 8px;">学习完成!</h2>
-            <p style="color: var(--text-light); margin-bottom: 30px;" id="completeSubtitle">太棒了，继续保持！</p>
-            <button class="btn btn-primary" id="btnBackHome">返回首页</button>
+    <!-- 设置页 -->
+    <div id="pageSettings" class="page">
+        <div class="header"><div class="header-title">设置</div></div>
+        
+        <div style="background:var(--card);border-radius:12px;padding:0 16px;margin-bottom:16px;">
+            <div class="setting-row">
+                <span class="setting-label">上传词书</span>
+                <button class="btn-small btn-outline" id="btnUpload">选择文件</button>
+                <input type="file" id="fileInput" accept=".txt" style="display:none;">
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">手动录入</span>
+                <button class="btn-small btn-outline" id="btnManualAdd">添加单词</button>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">词书名称</span>
+                <span class="setting-value" id="bookName">未导入</span>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">词书数量</span>
+                <span class="setting-value" id="bookCount">0 词</span>
+            </div>
+        </div>
+        
+        <div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px;">
+            <div class="setting-label" style="margin-bottom:12px;">学习计划（每次学习数量）</div>
+            <div class="select-group" id="learnCountGroup">
+                <button class="select-btn" data-v="10">10</button>
+                <button class="select-btn" data-v="20">20</button>
+                <button class="select-btn" data-v="30">30</button>
+                <button class="select-btn active" data-v="50">50</button>
+                <button class="select-btn" data-v="80">80</button>
+                <button class="select-btn" data-v="100">100</button>
+            </div>
+        </div>
+        
+        <div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px;">
+            <div class="setting-label" style="margin-bottom:12px;">复习计划（每次复习数量）</div>
+            <div class="select-group" id="reviewCountGroup">
+                <button class="select-btn active" data-v="10">10</button>
+                <button class="select-btn" data-v="20">20</button>
+                <button class="select-btn" data-v="30">30</button>
+                <button class="select-btn" data-v="50">50</button>
+                <button class="select-btn" data-v="80">80</button>
+                <button class="select-btn" data-v="100">100</button>
+            </div>
+        </div>
+        
+        <div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px;">
+            <div class="setting-label" style="margin-bottom:12px;">连续正确次数（达到即掌握）</div>
+            <div class="select-group" id="masterCountGroup">
+                <button class="select-btn" data-v="8">8次</button>
+                <button class="select-btn active" data-v="12">12次</button>
+            </div>
+        </div>
+        
+        <div style="background:var(--card);border-radius:12px;padding:0 16px;margin-bottom:16px;">
+            <div class="setting-row">
+                <span class="setting-label">朗读单词</span>
+                <label class="switch"><input type="checkbox" id="speakSwitch" checked><span class="slider"></span></label>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">允许斩（直接掌握）</span>
+                <label class="switch"><input type="checkbox" id="allowZhan"><span class="slider"></span></label>
+            </div>
+        </div>
+        
+        <div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px;">
+            <div class="setting-label" style="margin-bottom:12px;">题型开关</div>
+            <div class="select-group" id="typeGroup">
+                <button class="select-btn active" data-v="1">英选中</button>
+                <button class="select-btn active" data-v="2">中选英</button>
+                <button class="select-btn active" data-v="3">英选义</button>
+                <button class="select-btn active" data-v="4">义选英</button>
+            </div>
+        </div>
+        
+        <div style="background:var(--card);border-radius:12px;padding:0 16px;margin-bottom:16px;">
+            <div class="setting-row" id="btnMasteredList">
+                <span class="setting-label">已掌握库</span>
+                <span class="setting-value">→</span>
+            </div>
+            <div class="setting-row" id="btnClearData">
+                <span class="setting-label" style="color:var(--danger);">清空所有数据</span>
+            </div>
         </div>
     </div>
     
-    <div class="page" id="page-words"><div class="word-list" id="wordListAll"></div></div>
-    <div class="page" id="page-learning"><div class="word-list" id="wordListLearning"></div></div>
-    <div class="page" id="page-learned"><div class="word-list" id="wordListLearned"></div></div>
-    <div class="page" id="page-mastered"><div class="word-list" id="wordListMastered"></div></div>
-    <div class="page" id="page-wrong"><div class="word-list" id="wordListWrong"></div></div>
-    
-    <div class="page" id="page-settings">
-        <div class="setting-group">
-            <div class="setting-item"><span>每日新学数量</span><select class="setting-select" id="settingNewCount"><option value="10">10</option><option value="20" selected>20</option><option value="30">30</option><option value="50">50</option></select></div>
-            <div class="setting-item"><span>每日复习数量</span><select class="setting-select" id="settingReviewCount"><option value="10">10</option><option value="20" selected>20</option><option value="30">30</option><option value="50">50</option></select></div>
-            <div class="setting-item"><span>连续正确多少次掌握</span><select class="setting-select" id="settingMasterCount"><option value="3">3</option><option value="5">5</option><option value="8">8</option></select></div>
-            <div class="setting-item"><span>朗读发音</span><button class="toggle" id="settingSpeak"></button></div>
+    <!-- 已掌握库页 -->
+    <div id="pageMastered" class="page">
+        <div class="header">
+            <button class="header-back" id="btnBackSettings">←</button>
+            <div class="header-title">已掌握库</div>
         </div>
-        <h3 style="margin: 20px 0 12px; font-size: 15px;">导入词书</h3>
-        <div class="upload-area" id="uploadArea"><input type="file" id="fileInput" accept=".txt"><div style="font-size: 48px; margin-bottom: 12px;">📚</div><div style="font-size: 14px; color: var(--text-light);">点击上传 txt 文件<br><small>格式：单词 释义</small></div></div>
-        <button class="btn btn-danger" id="btnClearData" style="margin-top: 30px;">清空所有数据</button>
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" placeholder="搜索单词...">
+        </div>
+        <div id="masteredList"></div>
     </div>
     
-    <nav class="nav">
-        <button class="nav-item active" data-page="home">🏠 首页</button>
-        <button class="nav-item" data-page="words">📚 全部</button>
-        <button class="nav-item" data-page="learning">📖 在学</button>
-        <button class="nav-item" data-page="wrong">❌ 错题</button>
-        <button class="nav-item" data-page="settings">⚙️ 设置</button>
-    </nav>
-
-<script>
-(function() {
-    'use strict';
-    const STORAGE_KEY = 'flashcard_v3';
-    const SETTINGS_KEY = 'flashcard_settings_v3';
-    const defaultSettings = { newCount: 20, reviewCount: 20, masterCount: 3, speak: false };
+    <!-- 手动添加页 -->
+    <div id="pageAdd" class="page">
+        <div class="header">
+            <button class="header-back" id="btnBackAdd">←</button>
+            <div class="header-title">添加单词</div>
+        </div>
+        <div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px;">
+            <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">格式：英文|中文|定义|例句（每行一个）</div>
+            <textarea id="addText" style="width:100%;height:200px;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:14px;resize:none;" placeholder="apple|苹果|一种常见的水果|I eat an apple every day."></textarea>
+        </div>
+        <button class="btn btn-primary" id="btnConfirmAdd">确认添加</button>
+    </div>
     
-    function getData() { const d = localStorage.getItem(STORAGE_KEY); return d ? JSON.parse(d) : { words: [], lastDate: '' }; }
-    function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
-    function getSettings() { const s = localStorage.getItem(SETTINGS_KEY); return s ? {...defaultSettings, ...JSON.parse(s)} : defaultSettings; }
-    function saveSettings(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
+    <!-- 底部导航 -->
+    <div class="nav">
+        <button class="nav-item active" data-page="home"><div class="nav-icon">🏠</div><div>首页</div></button>
+        <button class="nav-item" data-page="settings"><div class="nav-icon">⚙️</div><div>设置</div></button>
+    </div>
     
-    let currentPage = 'home';
-    let study = { type: '', words: [], idx: 0, stage: 0, wrongQueue: [] };
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
     
-    function classifyWords() {
-        const d = getData();
-        const now = new Date().toDateString();
-        if (d.lastDate !== now) { d.words.forEach(w => { w.todayNew = 0; w.todayReview = 0; }); d.lastDate = now; saveData(d); }
-        const w = { all: d.words, new: [], learning: [], learned: [], mastered: [], wrong: [] };
-        d.words.forEach(v => {
-            if (v.wrongCount >= 3) w.wrong.push(v);
-            else if (v.streak >= getSettings().masterCount) w.mastered.push(v);
-            else if (v.stage >= 4) w.learned.push(v);
-            else if (v.stage > 0 || v.showedCard) w.learning.push(v);
-            else w.new.push(v);
-        });
-        return w;
-    }
-    
-    function showPage(name) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById('page-' + name)?.classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === name));
-        const titles = { home: '背单词', words: '生词本', learning: '正在学', learned: '已学', mastered: '已掌握', wrong: '错词本', settings: '设置', study: '学习中', complete: '学习完成' };
-        document.getElementById('pageTitle').textContent = titles[name] || '背单词';
-        document.getElementById('backBtn').classList.toggle('show', ['study', 'complete'].includes(name));
-        currentPage = name;
-        if (name === 'home') updateHome();
-        else if (['words','learning','learned','mastered','wrong'].includes(name)) renderList(name);
-        else if (name === 'settings') loadSettings();
-    }
-    
-    function updateHome() {
-        const w = classifyWords();
-        document.getElementById('stats').innerHTML = `<div class="stat-item"><div class="stat-num">${w.new.length}</div><div class="stat-label">待新学</div></div><div class="stat-item"><div class="stat-num">${w.learning.length}</div><div class="stat-label">正在学</div></div><div class="stat-item"><div class="stat-num">${w.mastered.length}</div><div class="stat-label">已掌握</div></div><div class="stat-item"><div class="stat-num">${w.wrong.length}</div><div class="stat-label">错词</div></div>`;
-        document.getElementById('btnStudy').disabled = w.new.length === 0 && w.learning.length === 0;
-        document.getElementById('btnReview').disabled = w.learned.length === 0;
-        document.getElementById('btnWrongReview').disabled = w.wrong.length === 0;
-    }
-    
-    function renderList(type) {
-        const w = classifyWords();
-        const list = w[type] || [];
-        const container = document.getElementById('wordList' + type.charAt(0).toUpperCase() + type.slice(1));
-        if (!container) return;
-        if (list.length === 0) { container.innerHTML = '<div class="empty-state"><p>暂无单词</p></div>'; return; }
-        let html = '';
-        list.forEach(v => {
-            let status = '新词', cls = 'status-new';
-            if (v.wrongCount >= 3) { status = '错' + v.wrongCount + '次'; cls = 'status-wrong'; }
-            else if (v.streak >= getSettings().masterCount) { status = '已掌握'; cls = 'status-mastered'; }
-            else if (v.stage >= 4) { status = '已学'; cls = 'status-learned'; }
-            else if (v.stage > 0) { status = '学习中'; cls = 'status-learning'; }
-            html += `<div class="word-item"><div class="word-info"><h3>${v.word}</h3><p>${v.meaning}</p></div><span class="word-status ${cls}">${status}</span></div>`;
-        });
-        container.innerHTML = html;
-    }
-    
-    function startStudy(type) {
-        const w = classifyWords();
-        const s = getSettings();
-        let words = [];
-        if (type === 'new') words = [...w.new.slice(0, s.newCount), ...w.learning.slice(0, Math.max(0, s.newCount - w.new.length))];
-        else if (type === 'review') words = w.learned.slice(0, s.reviewCount);
-        else words = w.wrong;
-        if (words.length === 0) { showToast('没有可学习的单词'); return; }
-        study = { type, words, idx: 0, stage: type === 'new' ? 0 : 1, wrongQueue: [] };
-        showPage('study');
-        renderStep();
-    }
-    
-    function renderStep() {
-        const content = document.getElementById('studyContent');
-        const progress = document.getElementById('progressFill');
-        const total = study.words.length * (study.type === 'new' ? 5 : 4);
-        const current = study.idx * (study.type === 'new' ? 5 : 4) + study.stage - (study.type === 'new' ? 0 : 1);
-        progress.style.width = Math.min(100, (current / total * 100)) + '%';
+    <script>
+    (function() {
+        'use strict';
         
-        if (study.wrongQueue.length > 0) { renderQuestion(study.wrongQueue.shift()); return; }
-        if (study.idx >= study.words.length) { completeStudy(); return; }
+        // ========== 存储 ==========
+        const KEY = 'vocab_v4';
         
-        const word = study.words[study.idx];
-        if (study.type === 'new' && study.stage === 0) {
-            content.innerHTML = `<div class="word-card"><div class="word-text">${word.word}</div><div class="word-meaning">${word.meaning}</div></div><button class="btn btn-success" id="nextBtn">记住了 →</button>`;
-            document.getElementById('nextBtn').onclick = () => { word.showedCard = true; saveData(getData()); study.stage = 1; renderStep(); };
-            if (getSettings().speak && 'speechSynthesis' in window) speechSynthesis.speak(new SpeechSynthesisUtterance(word.word));
-        } else {
-            renderQuestion(word);
+        function getData() {
+            let d = localStorage.getItem(KEY);
+            if (!d) return { words: [], settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4] }, progress: null };
+            try { return JSON.parse(d); } catch(e) { return { words: [], settings: { learnCount: 50, reviewCount: 10, masterCount: 12, speak: true, allowZhan: false, types: [1,2,3,4] }, progress: null }; }
         }
-    }
-    
-    function renderQuestion(word) {
-        const content = document.getElementById('studyContent');
-        const allWords = getData().words.filter(w => w.word !== word.word);
-        const others = allWords.sort(() => Math.random() - 0.5).slice(0, 3);
-        let question, options, correct;
-        if (study.stage === 1) { question = word.word; options = [word.meaning, ...others.map(o => o.meaning)].sort(() => Math.random() - 0.5); correct = word.meaning; }
-        else if (study.stage === 2) { question = word.meaning; options = [word.word, ...others.map(o => o.word)].sort(() => Math.random() - 0.5); correct = word.word; }
-        else if (study.stage === 3) { question = word.word; options = [word.meaning, ...others.map(o => o.meaning)].sort(() => Math.random() - 0.5); correct = word.meaning; }
-        else { question = word.meaning; options = [word.word, ...others.map(o => o.word)].sort(() => Math.random() - 0.5); correct = word.word; }
         
-        content.innerHTML = `<div class="word-card"><div class="word-text">${question}</div></div><div class="options">${options.map(o => `<button class="option" data-ans="${o}">${o}</button>`).join('')}</div>`;
-        content.querySelectorAll('.option').forEach(btn => {
-            btn.onclick = function() {
-                const ans = this.dataset.ans;
-                const isCorrect = ans === correct;
-                content.querySelectorAll('.option').forEach(b => { b.classList.add('disabled'); if (b.dataset.ans === correct) b.classList.add('correct'); });
-                if (isCorrect) { word.streak = (word.streak || 0) + 1; word.wrongCount = 0; }
-                else { word.wrongCount = (word.wrongCount || 0) + 1; word.streak = 0; this.classList.add('wrong'); study.wrongQueue.push(word); }
-                saveData(getData());
-                setTimeout(() => { study.stage++; if (study.stage > 4) { word.stage = 4; saveData(getData()); study.idx++; study.stage = 1; } renderStep(); }, 800);
-            };
-        });
-        if (getSettings().speak && (study.stage === 1 || study.stage === 3) && 'speechSynthesis' in window) speechSynthesis.speak(new SpeechSynthesisUtterance(word.word));
-    }
-    
-    function completeStudy() {
-        document.getElementById('completeSubtitle').textContent = `本次学习了 ${study.words.length} 个单词`;
-        showPage('complete');
-    }
-    
-    function loadSettings() {
-        const s = getSettings();
-        document.getElementById('settingNewCount').value = s.newCount;
-        document.getElementById('settingReviewCount').value = s.reviewCount;
-        document.getElementById('settingMasterCount').value = s.masterCount;
-        document.getElementById('settingSpeak').classList.toggle('active', s.speak);
-    }
-    
-    function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
-    
-    document.querySelectorAll('.nav-item').forEach(n => n.onclick = function() { showPage(this.dataset.page); });
-    document.getElementById('backBtn').onclick = () => showPage('home');
-    document.getElementById('btnStudy').onclick = () => startStudy('new');
-    document.getElementById('btnReview').onclick = () => startStudy('review');
-    document.getElementById('btnWrongReview').onclick = () => startStudy('wrong');
-    document.getElementById('btnBackHome').onclick = () => showPage('home');
-    document.getElementById('settingNewCount').onchange = function() { const s = getSettings(); s.newCount = +this.value; saveSettings(s); };
-    document.getElementById('settingReviewCount').onchange = function() { const s = getSettings(); s.reviewCount = +this.value; saveSettings(s); };
-    document.getElementById('settingMasterCount').onchange = function() { const s = getSettings(); s.masterCount = +this.value; saveSettings(s); };
-    document.getElementById('settingSpeak').onclick = function() { const s = getSettings(); s.speak = !s.speak; saveSettings(s); this.classList.toggle('active', s.speak); };
-    document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
-    document.getElementById('fileInput').onchange = function() {
-        if (!this.files[0]) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const lines = e.target.result.split('\n').filter(l => l.trim());
+        function saveData(d) { localStorage.setItem(KEY, JSON.stringify(d)); }
+        
+        // ========== 状态分类 ==========
+        function classify(word, settings) {
+            const types = settings.types;
+            // 检查是否已掌握
+            if (word.streak >= settings.masterCount) return 'mastered';
+            // 检查错词本
+            if (word.wrongCount >= 3) return 'wrong';
+            // 检查是否每种题型都有正确记录
+            const hasAllCorrect = types.every(t => word.correctTypes && word.correctTypes.includes(t));
+            if (!word.cardShown) return 'new';
+            if (!hasAllCorrect) return 'learning';
+            return 'learned';
+        }
+        
+        function getStats() {
             const d = getData();
-            let added = 0;
-            lines.forEach(l => {
-                const parts = l.trim().split(/[\t ]+/);
-                if (parts.length >= 2) {
-                    const word = parts[0].trim(), meaning = parts.slice(1).join(' ').trim();
-                    if (word && meaning && !d.words.find(w => w.word.toLowerCase() === word.toLowerCase())) {
-                        d.words.push({ word, meaning, stage: 0, streak: 0, wrongCount: 0, showedCard: false });
-                        added++;
+            let stats = { new: 0, learning: 0, learned: 0, mastered: 0, wrong: 0 };
+            d.words.forEach(w => {
+                const c = classify(w, d.settings);
+                stats[c]++;
+            });
+            return stats;
+        }
+        
+        // ========== UI ==========
+        function $(id) { return document.getElementById(id); }
+        
+        function showPage(name) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            $('page' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
+        }
+        
+        function toast(msg) {
+            $('toast').textContent = msg;
+            $('toast').classList.add('show');
+            setTimeout(() => $('toast').classList.remove('show'), 1500);
+        }
+        
+        function speak(text) {
+            const d = getData();
+            if (!d.settings.speak) return;
+            if ('speechSynthesis' in window) {
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = 'en-US';
+                speechSynthesis.speak(u);
+            }
+        }
+        
+        function updateStats() {
+            const s = getStats();
+            $('statNew').textContent = s.new;
+            $('statLearning').textContent = s.learning;
+            $('statLearned').textContent = s.learned;
+            $('statMastered').textContent = s.mastered;
+            $('wrongCount').textContent = s.wrong + ' 词';
+            $('wrongCount').parentElement.style.display = s.wrong > 0 ? 'flex' : 'none';
+            $('btnReviewWrong').classList.toggle('hidden', s.wrong === 0);
+            
+            const d = getData();
+            $('bookName').textContent = d.bookName || '未导入';
+            $('bookCount').textContent = d.words.length + ' 词';
+        }
+        
+        // ========== 学习逻辑 ==========
+        let study = null; // { mode: 'learn'/'review', type: 'normal'/'wrong', queue: [], idx: 0, stage: 0, wrongQueue: [], stageQueue: [] }
+        
+        function getLearnWords(d) {
+            // 学习：优先正在学，再新词
+            const learning = d.words.filter(w => classify(w, d.settings) === 'learning');
+            const newWords = d.words.filter(w => classify(w, d.settings) === 'new');
+            const all = [...learning, ...newWords];
+            return all.slice(0, d.settings.learnCount);
+        }
+        
+        function getReviewWords(d, wrongOnly) {
+            if (wrongOnly) {
+                return d.words.filter(w => classify(w, d.settings) === 'wrong').slice(0, d.settings.reviewCount);
+            }
+            return d.words.filter(w => classify(w, d.settings) === 'learned').slice(0, d.settings.reviewCount);
+        }
+        
+        function startStudy(mode, wrongOnly) {
+            const d = getData();
+            let words = mode === 'learn' ? getLearnWords(d) : getReviewWords(d, wrongOnly);
+            if (words.length === 0) {
+                toast(mode === 'learn' ? '没有可学习的单词' : '没有可复习的单词');
+                return;
+            }
+            
+            const types = d.settings.types;
+            study = {
+                mode: mode,
+                wrongOnly: wrongOnly || false,
+                words: words,
+                idx: 0,
+                stage: mode === 'learn' ? 0 : 1, // 0: 卡片, 1-4: 题型
+                types: types,
+                wrongQueue: [],
+                stageQueue: [] // 当前阶段的单词队列
+            };
+            
+            // 初始化第一阶段队列
+            study.stageQueue = [...study.words];
+            
+            showPage('study');
+            $('studyTitle').textContent = mode === 'learn' ? '学习' : '复习';
+            renderStudy();
+        }
+        
+        function renderStudy() {
+            if (!study || study.stageQueue.length === 0) {
+                finishStudy();
+                return;
+            }
+            
+            const d = getData();
+            const word = study.stageQueue[0];
+            const progress = ((study.words.length - study.stageQueue.length + 1) / study.words.length) * 100;
+            $('progressFill').style.width = progress + '%';
+            
+            let html = '';
+            
+            // 卡片阶段（仅学习模式）
+            if (study.mode === 'learn' && study.stage === 0) {
+                html = `
+                    <div class="word-card">
+                        <div class="word-en">${word.en}</div>
+                        <div class="word-cn">${word.cn}</div>
+                        <div class="word-def">${word.def || ''}</div>
+                        <div class="word-ex">${word.ex || ''}</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="nextCard()">认识</button>
+                `;
+            } else {
+                // 题型阶段
+                const stageIndex = study.mode === 'learn' ? study.stage - 1 : study.stage - 1;
+                const type = study.types[stageIndex];
+                
+                if (type === undefined) {
+                    // 所有题型完成
+                    study.stageQueue.shift();
+                    if (study.stageQueue.length > 0) {
+                        renderStudy();
+                    } else {
+                        nextStage();
+                    }
+                    return;
+                }
+                
+                html = renderQuestion(word, type, d);
+            }
+            
+            $('studyContent').innerHTML = html;
+        }
+        
+        function renderQuestion(word, type, d) {
+            // 获取干扰项
+            let others = d.words.filter(w => w.en !== word.en);
+            others.sort(() => Math.random() - 0.5);
+            others = others.slice(0, 3);
+            
+            let question, options, correct;
+            const typeNames = { 1: '英选中', 2: '中选英', 3: '英选义', 4: '义选英' };
+            
+            switch(type) {
+                case 1: // 英选中：显示英文，选中文
+                    question = word.en;
+                    options = [word.cn, ...others.map(o => o.cn)].sort(() => Math.random() - 0.5);
+                    correct = word.cn;
+                    speak(word.en);
+                    break;
+                case 2: // 中选英：显示中文，选英文
+                    question = word.cn;
+                    options = [word.en, ...others.map(o => o.en)].sort(() => Math.random() - 0.5);
+                    correct = word.en;
+                    break;
+                case 3: // 英选义：显示英文，选定义
+                    question = word.en;
+                    options = [word.def || word.cn, ...others.map(o => o.def || o.cn)].sort(() => Math.random() - 0.5);
+                    correct = word.def || word.cn;
+                    speak(word.en);
+                    break;
+                case 4: // 义选英：显示定义，选英文
+                    question = word.def || word.cn;
+                    options = [word.en, ...others.map(o => o.en)].sort(() => Math.random() - 0.5);
+                    correct = word.en;
+                    break;
+            }
+            
+            let html = `<div class="stage-hint">${typeNames[type]}</div>`;
+            html += `<div class="word-card"><div class="word-en">${question}</div></div>`;
+            html += '<div class="options">';
+            options.forEach(opt => {
+                html += `<button class="option" onclick="checkAnswer('${opt.replace(/'/g, "\\'")}', '${correct.replace(/'/g, "\\'")}', ${type})">${opt}</button>`;
+            });
+            html += '</div>';
+            
+            // 斩按钮
+            if (d.settings.allowZhan) {
+                html += `<button class="btn btn-outline" style="margin-top:16px;" onclick="zhanWord()">斩（直接掌握）</button>`;
+            }
+            
+            return html;
+        }
+        
+        window.nextCard = function() {
+            const d = getData();
+            const word = study.stageQueue[0];
+            
+            // 标记卡片已展示
+            const idx = d.words.findIndex(w => w.en === word.en);
+            if (idx >= 0) {
+                d.words[idx].cardShown = true;
+                saveData(d);
+            }
+            
+            study.stageQueue.shift();
+            
+            if (study.stageQueue.length > 0) {
+                renderStudy();
+            } else {
+                // 卡片阶段完成，进入题型阶段
+                study.stage = 1;
+                study.stageQueue = [...study.words];
+                renderStudy();
+            }
+        };
+        
+        window.checkAnswer = function(selected, correct, type) {
+            const btns = document.querySelectorAll('.option');
+            const isCorrect = selected === correct;
+            
+            btns.forEach(btn => {
+                btn.classList.add('disabled');
+                if (btn.textContent === correct) btn.classList.add('correct');
+                else if (btn.textContent === selected && !isCorrect) btn.classList.add('wrong');
+            });
+            
+            const d = getData();
+            const word = study.stageQueue[0];
+            const idx = d.words.findIndex(w => w.en === word.en);
+            
+            if (idx >= 0) {
+                if (isCorrect) {
+                    // 正确：增加连续正确次数
+                    d.words[idx].streak = (d.words[idx].streak || 0) + 1;
+                    // 记录该题型正确
+                    if (!d.words[idx].correctTypes) d.words[idx].correctTypes = [];
+                    if (!d.words[idx].correctTypes.includes(type)) d.words[idx].correctTypes.push(type);
+                } else {
+                    // 错误：清零连续正确次数，增加错误次数
+                    d.words[idx].streak = 0;
+                    d.words[idx].wrongCount = (d.words[idx].wrongCount || 0) + 1;
+                }
+                saveData(d);
+            }
+            
+            setTimeout(() => {
+                if (isCorrect) {
+                    // 正确，进入下一个单词
+                    study.stageQueue.shift();
+                    if (study.stageQueue.length > 0) {
+                        renderStudy();
+                    } else {
+                        nextStage();
+                    }
+                } else {
+                    // 错误，加入错误队列末尾
+                    const wrongWord = study.stageQueue.shift();
+                    study.wrongQueue.push({ word: wrongWord, type: type });
+                    
+                    if (study.stageQueue.length > 0) {
+                        renderStudy();
+                    } else {
+                        // 当前阶段完成，处理错误队列
+                        processWrongQueue();
                     }
                 }
-            });
-            saveData(d);
-            showToast(`已导入 ${added} 个单词`);
-            updateHome();
+            }, 600);
         };
-        reader.readAsText(this.files[0]);
-    };
-    document.getElementById('btnClearData').onclick = function() { if (confirm('确定要清空所有数据吗？')) { localStorage.removeItem(STORAGE_KEY); showToast('已清空'); updateHome(); } };
-    
-    updateHome();
-})();
-</script>
+        
+        function nextStage() {
+            study.stage++;
+            if (study.stage <= study.types.length) {
+                // 还有下一个题型阶段
+                study.stageQueue = [...study.words];
+                renderStudy();
+            } else {
+                // 所有阶段完成，处理错误队列
+                if (study.wrongQueue.length > 0) {
+                    processWrongQueue();
+                } else {
+                    finishStudy();
+                }
+            }
+        }
+        
+        function processWrongQueue() {
+            // 学习模式：错词需要重新看卡片
+            if (study.mode === 'learn' && study.wrongQueue.length > 0) {
+                const item = study.wrongQueue.shift();
+                // 重新加入当前阶段队列开头
+                study.stageQueue.unshift(item.word);
+                toast('重新学习错误单词');
+                renderStudy();
+            } else if (study.mode === 'review' && study.wrongQueue.length > 0) {
+                // 复习模式：错词重新做同一题型
+                const item = study.wrongQueue.shift();
+                study.stageQueue.unshift(item.word);
+                // 保持当前阶段
+                renderStudy();
+            } else {
+                finishStudy();
+            }
+        }
+        
+        window.zhanWord = function() {
+            const d = getData();
+            const word = study.stageQueue[0];
+            const idx = d.words.findIndex(w => w.en === word.en);
+            
+            if (idx >= 0) {
+                d.words[idx].streak = d.settings.masterCount;
+                d.words[idx].wrongCount = 0;
+                saveData(d);
+            }
+            
+            study.stageQueue.shift();
+            toast('已掌握！');
+            
+            if (study.stageQueue.length > 0) {
+                renderStudy();
+            } else {
+                nextStage();
+            }
+        };
+        
+        function finishStudy() {
+            toast('学习完成！');
+            updateStats();
+            
+            setTimeout(() => {
+                showPage('home');
+            }, 1000);
+        }
+        
+        // ========== 导入词书 ==========
+        function parseWordLine(line) {
+            const parts = line.split('|');
+            if (parts.length < 2) return null;
+            return {
+                en: parts[0].trim(),
+                cn: parts[1].trim(),
+                def: parts[2] ? parts[2].trim() : '',
+                ex: parts[3] ? parts[3].trim() : '',
+                cardShown: false,
+                streak: 0,
+                wrongCount: 0,
+                correctTypes: []
+            };
+        }
+        
+        function importWords(text, bookName) {
+            const lines = text.split('\n').filter(l => l.trim());
+            const d = getData();
+            let added = 0;
+            
+            lines.forEach(line => {
+                const w = parseWordLine(line);
+                if (w && !d.words.some(x => x.en.toLowerCase() === w.en.toLowerCase())) {
+                    d.words.push(w);
+                    added++;
+                }
+            });
+            
+            if (added > 0) {
+                d.bookName = bookName || '词书';
+                saveData(d);
+            }
+            
+            return added;
+        }
+        
+        // ========== 已掌握库 ==========
+        function renderMasteredList(filter) {
+            const d = getData();
+            let words = d.words.filter(w => classify(w, d.settings) === 'mastered');
+            
+            if (filter) {
+                words = words.filter(w => w.en.toLowerCase().startsWith(filter.toLowerCase()));
+            }
+            
+            // 按首字母排序
+            words.sort((a, b) => a.en.localeCompare(b.en));
+            
+            let html = '<div class="word-list">';
+            words.forEach(w => {
+                html += `
+                    <div class="word-item">
+                        <div class="word-info">
+                            <h4>${w.en}</h4>
+                            <p>${w.cn}</p>
+                        </div>
+                        <button class="btn-small btn-outline" onclick="removeFromMastered('${w.en.replace(/'/g, "\\'")}')">移出</button>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            if (words.length === 0) {
+                html = '<div style="text-align:center;padding:40px;color:var(--text-light);">暂无已掌握的单词</div>';
+            }
+            
+            $('masteredList').innerHTML = html;
+        }
+        
+        window.removeFromMastered = function(en) {
+            const d = getData();
+            const idx = d.words.findIndex(w => w.en === en);
+            if (idx >= 0) {
+                d.words[idx].streak = 0;
+                d.words[idx].cardShown = false;
+                d.words[idx].correctTypes = [];
+                saveData(d);
+                toast('已移出已掌握库');
+                renderMasteredList($('searchInput').value);
+                updateStats();
+            }
+        };
+        
+        // ========== 事件绑定 ==========
+        function initEvents() {
+            // 导航
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.onclick = function() {
+                    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const page = this.dataset.page;
+                    if (page === 'home') { showPage('home'); updateStats(); }
+                    else if (page === 'settings') showPage('settings');
+                };
+            });
+            
+            // 开始学习/复习
+            $('btnStartLearn').onclick = () => startStudy('learn', false);
+            $('btnStartReview').onclick = () => startStudy('review', false);
+            $('btnReviewWrong').onclick = () => startStudy('review', true);
+            
+            // 返回
+            $('btnBackHome').onclick = () => { showPage('home'); updateStats(); };
+            $('btnBackSettings').onclick = () => showPage('settings');
+            $('btnBackAdd').onclick = () => showPage('settings');
+            
+            // 上传
+            $('btnUpload').onclick = () => $('fileInput').click();
+            $('fileInput').onchange = function() {
+                const file = this.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const added = importWords(e.target.result, file.name.replace('.txt', ''));
+                    toast(`导入成功：${added} 词`);
+                    updateStats();
+                };
+                reader.readAsText(file);
+            };
+            
+            // 手动添加
+            $('btnManualAdd').onclick = () => showPage('add');
+            $('btnConfirmAdd').onclick = function() {
+                const text = $('addText').value;
+                if (!text.trim()) { toast('请输入单词'); return; }
+                const added = importWords(text, '手动录入');
+                toast(`添加成功：${added} 词`);
+                $('addText').value = '';
+                updateStats();
+            };
+            
+            // 设置选择
+            function bindSelectGroup(id, key) {
+                document.querySelectorAll('#' + id + ' .select-btn').forEach(btn => {
+                    btn.onclick = function() {
+                        document.querySelectorAll('#' + id + ' .select-btn').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        const d = getData();
+                        d.settings[key] = parseInt(this.dataset.v);
+                        saveData(d);
+                    };
+                });
+            }
+            bindSelectGroup('learnCountGroup', 'learnCount');
+            bindSelectGroup('reviewCountGroup', 'reviewCount');
+            bindSelectGroup('masterCountGroup', 'masterCount');
+            
+            // 题型开关
+            document.querySelectorAll('#typeGroup .select-btn').forEach(btn => {
+                btn.onclick = function() {
+                    this.classList.toggle('active');
+                    const d = getData();
+                    d.settings.types = [];
+                    document.querySelectorAll('#typeGroup .select-btn.active').forEach(b => {
+                        d.settings.types.push(parseInt(b.dataset.v));
+                    });
+                    if (d.settings.types.length === 0) d.settings.types = [1, 2, 3, 4];
+                    saveData(d);
+                };
+            });
+            
+            // 开关
+            $('speakSwitch').onchange = function() {
+                const d = getData();
+                d.settings.speak = this.checked;
+                saveData(d);
+            };
+            $('allowZhan').onchange = function() {
+                const d = getData();
+                d.settings.allowZhan = this.checked;
+                saveData(d);
+            };
+            
+            // 已掌握库
+            $('btnMasteredList').onclick = () => {
+                showPage('mastered');
+                renderMasteredList('');
+            };
+            $('searchInput').oninput = function() {
+                renderMasteredList(this.value);
+            };
+            
+            // 清空数据
+            $('btnClearData').onclick = function() {
+                if (confirm('确定清空所有数据？此操作不可恢复！')) {
+                    localStorage.removeItem(KEY);
+                    toast('已清空');
+                    updateStats();
+                }
+            };
+            
+            // 加载设置
+            function loadSettings() {
+                const d = getData();
+                const s = d.settings;
+                
+                document.querySelectorAll('#learnCountGroup .select-btn').forEach(b => {
+                    b.classList.toggle('active', parseInt(b.dataset.v) === s.learnCount);
+                });
+                document.querySelectorAll('#reviewCountGroup .select-btn').forEach(b => {
+                    b.classList.toggle('active', parseInt(b.dataset.v) === s.reviewCount);
+                });
+                document.querySelectorAll('#masterCountGroup .select-btn').forEach(b => {
+                    b.classList.toggle('active', parseInt(b.dataset.v) === s.masterCount);
+                });
+                document.querySelectorAll('#typeGroup .select-btn').forEach(b => {
+                    b.classList.toggle('active', s.types.includes(parseInt(b.dataset.v)));
+                });
+                
+                $('speakSwitch').checked = s.speak;
+                $('allowZhan').checked = s.allowZhan;
+            }
+            
+            loadSettings();
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initEvents();
+            updateStats();
+        });
+    })();
+    </script>
 </body>
 </html>
