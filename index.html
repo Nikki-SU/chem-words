@@ -2,2284 +2,303 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>化学词汇背单词</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>背单词</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        :root {
-            --primary: #4A90D9;
-            --success: #52C41A;
-            --danger: #FF4D4F;
-            --warning: #FAAD14;
-            --bg: #F5F5F5;
-            --card-bg: #FFFFFF;
-            --text: #333333;
-            --text-secondary: #666666;
-            --border: #E8E8E8;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            max-width: 430px;
-            margin: 0 auto;
-            padding-bottom: 70px;
-        }
-
-        .header {
-            background: var(--primary);
-            color: white;
-            padding: 16px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header h1 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .header-btn {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .content {
-            padding: 16px;
-        }
-
-        .page {
-            display: none;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-            width: 100%;
-            margin-bottom: 12px;
-            touch-action: manipulation;
-        }
-
-        .btn:last-child {
-            margin-bottom: 0;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-warning {
-            background: var(--warning);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 14px;
-            width: auto;
-        }
-
-        .settings-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .settings-row:last-child {
-            border-bottom: none;
-        }
-
-        .settings-label {
-            font-size: 15px;
-        }
-
-        .settings-value {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .switch {
-            position: relative;
-            width: 48px;
-            height: 28px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .3s;
-            border-radius: 28px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--primary);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
-
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            background: var(--bg);
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .checkbox-item input {
-            width: 16px;
-            height: 16px;
-        }
-
-        .select-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .select-btn {
-            padding: 8px 16px;
-            border: 1px solid var(--border);
-            background: var(--card-bg);
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            touch-action: manipulation;
-        }
-
-        .select-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .study-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            text-align: center;
-            min-height: 200px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-        }
-
-        .study-card .word {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 8px;
-            cursor: pointer;
-        }
-
-        .study-card .phonetic {
-            font-size: 16px;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-        }
-
-        .study-card .meaning {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .study-card .definition {
-            font-size: 16px;
-            color: var(--text-secondary);
-            padding: 12px;
-            background: #F8F9FA;
-            border-radius: 8px;
-            margin-bottom: 12px;
-        }
-
-        .study-card .example {
-            font-size: 14px;
-            color: var(--text-secondary);
-            font-style: italic;
-            line-height: 1.6;
-        }
-
-        .speaker-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            margin-bottom: 16px;
-        }
-
-        .progress-bar {
-            height: 6px;
-            background: var(--border);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 16px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--primary);
-            transition: width 0.3s;
-        }
-
-        .progress-text {
-            text-align: center;
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-        }
-
-        .options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .option {
-            padding: 16px;
-            background: var(--card-bg);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            word-break: break-word;
-            overflow-wrap: break-word;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
-        }
-
-        .option:active {
-            transform: scale(0.98);
-        }
-
-        .option.selected {
-            border-color: var(--primary);
-            background: rgba(74, 144, 217, 0.1);
-        }
-
-        .option.correct {
-            border-color: var(--success);
-            background: rgba(82, 196, 26, 0.15);
-        }
-
-        .option.wrong {
-            border-color: var(--danger);
-            background: rgba(255, 77, 79, 0.15);
-        }
-
-        .option.disabled {
-            pointer-events: none;
-            opacity: 0.6;
-        }
-
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .stat-item {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        .word-list {
-            background: var(--card-bg);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .word-item {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .word-item:last-child {
-            border-bottom: none;
-        }
-
-        .word-item.selected {
-            background: rgba(74, 144, 217, 0.1);
-        }
-
-        .word-info h4 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .word-info p {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .word-stats {
-            text-align: right;
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .word-stats .streak {
-            color: var(--success);
-            font-weight: 600;
-        }
-
-        .upload-area {
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 32px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 16px;
-        }
-
-        .upload-area:hover {
-            border-color: var(--primary);
-            background: rgba(74, 144, 217, 0.05);
-        }
-
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
-        }
-
-        .upload-text {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        #fileInput {
-            display: none;
-        }
-
-        .preview-area {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .preview-title {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: var(--text-secondary);
-        }
-
-        .preview-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .preview-item {
-            padding: 10px;
-            border-bottom: 1px solid var(--border);
-            font-size: 14px;
-        }
-
-        .preview-item:last-child {
-            border-bottom: none;
-        }
-
-        .preview-item .word {
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .completion-card {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .completion-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-        }
-
-        .completion-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .completion-subtitle {
-            color: var(--text-secondary);
-            margin-bottom: 24px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-secondary);
-        }
-
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
-        }
-
-        .round-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .round-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--border);
-        }
-
-        .round-dot.active {
-            background: var(--primary);
-        }
-
-        .round-dot.completed {
-            background: var(--success);
-        }
-
-        .toast {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            z-index: 1000;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-
-        .study-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .action-btn {
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
-        }
-
-        .action-btn:active {
-            transform: scale(0.98);
-        }
-
-        .action-new {
-            background: linear-gradient(135deg, #4A90D9, #6BA3E0);
-            color: white;
-        }
-
-        .action-review {
-            background: linear-gradient(135deg, #52C41A, #73D13D);
-            color: white;
-        }
-
-        .action-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .action-desc {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .delete-btn {
-            color: var(--danger);
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 4px 8px;
-            touch-action: manipulation;
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 430px;
-            background: var(--card-bg);
-            border-top: 1px solid var(--border);
-            display: flex;
-            padding: 8px 0;
-            padding-bottom: max(8px, env(safe-area-inset-bottom));
-            z-index: 100;
-        }
-
-        .nav-item {
-            flex: 1;
-            text-align: center;
-            font-size: 11px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 6px 2px;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
-        }
-
-        .nav-item.active {
-            color: var(--primary);
-        }
-
-        .nav-icon {
-            font-size: 20px;
-            margin-bottom: 2px;
-        }
-
-        .today-progress {
-            background: linear-gradient(135deg, var(--primary), #6BA3E0);
-            color: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .today-title {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-bottom: 8px;
-        }
-
-        .today-stats {
-            display: flex;
-            justify-content: space-around;
-        }
-
-        .today-stat {
-            text-align: center;
-        }
-
-        .today-stat-value {
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .today-stat-label {
-            font-size: 11px;
-            opacity: 0.8;
-        }
-
-        .wordbook-info {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .wordbook-name {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .wordbook-stats {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        .zhan-btn {
-            position: absolute;
-            right: 16px;
-            top: 16px;
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-
-        .next-btn-area {
-            margin-top: 16px;
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .search-box {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        /* 单词分类标签 */
-        .word-category {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            margin-left: 8px;
-        }
-        .category-new { background: rgba(74,144,217,0.2); color: var(--primary); }
-        .category-learning { background: rgba(250,173,20,0.2); color: var(--warning); }
-        .category-learned { background: rgba(82,196,26,0.2); color: var(--success); }
-        .category-mastered { background: rgba(132,204,22,0.3); color: #65a30d; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { --primary: #4A90D9; --success: #52C41A; --danger: #FF6B6B; --warning: #FFA940; --bg: #F5F7FA; --card: #FFFFFF; --text: #333; --text-light: #999; --border: #E8E8E8; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; max-width: 480px; margin: 0 auto; padding-bottom: 70px; }
+        .page { display: none; padding: 16px; min-height: calc(100vh - 70px); }
+        .page.active { display: block; }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--primary); color: white; position: sticky; top: 0; z-index: 100; }
+        .header-back { width: 40px; height: 40px; border: none; background: transparent; color: white; font-size: 20px; cursor: pointer; display: none; }
+        .header-back.show { display: block; }
+        .header h1 { font-size: 18px; font-weight: 500; }
+        .nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; display: flex; background: var(--card); border-top: 1px solid var(--border); z-index: 100; }
+        .nav-item { flex: 1; padding: 8px 4px; text-align: center; border: none; background: transparent; color: var(--text-light); font-size: 11px; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+        .stat-item { background: var(--card); border-radius: 12px; padding: 12px 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .stat-num { font-size: 24px; font-weight: 700; color: var(--primary); }
+        .stat-label { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+        .btn { display: block; width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 12px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .word-card { background: var(--card); border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 16px; }
+        .word-text { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .word-meaning { font-size: 18px; color: var(--text); padding: 12px; background: var(--bg); border-radius: 8px; margin-top: 16px; }
+        .options { display: grid; gap: 10px; }
+        .option { padding: 14px 16px; background: var(--card); border: 2px solid var(--border); border-radius: 10px; font-size: 15px; text-align: left; cursor: pointer; }
+        .option:active { transform: scale(0.98); }
+        .option.correct { border-color: var(--success); background: #f6ffed; color: var(--success); }
+        .option.wrong { border-color: var(--danger); background: #fff2f0; color: var(--danger); }
+        .option.disabled { pointer-events: none; opacity: 0.6; }
+        .progress-bar { height: 6px; background: var(--border); border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.3s; }
+        .word-list { background: var(--card); border-radius: 12px; overflow: hidden; }
+        .word-item { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .word-item:last-child { border-bottom: none; }
+        .word-info h3 { font-size: 16px; margin-bottom: 4px; }
+        .word-info p { font-size: 13px; color: var(--text-light); }
+        .word-status { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .status-new { background: #e6f7ff; color: var(--primary); }
+        .status-learning { background: #fff7e6; color: var(--warning); }
+        .status-learned { background: #f6ffed; color: var(--success); }
+        .status-mastered { background: #722ed1; color: white; }
+        .status-wrong { background: #fff2f0; color: var(--danger); }
+        .setting-group { background: var(--card); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+        .setting-item { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .setting-item:last-child { border-bottom: none; }
+        .setting-select { padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: white; }
+        .toggle { width: 48px; height: 28px; border-radius: 14px; border: none; background: var(--border); position: relative; cursor: pointer; }
+        .toggle.active { background: var(--primary); }
+        .toggle::after { content: ''; position: absolute; width: 24px; height: 24px; border-radius: 12px; background: white; top: 2px; left: 2px; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .toggle.active::after { transform: translateX(20px); }
+        .upload-area { border: 2px dashed var(--border); border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; }
+        .upload-area input { display: none; }
+        .complete-page { text-align: center; padding-top: 60px; }
+        .complete-icon { font-size: 80px; margin-bottom: 20px; }
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 1000; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🧪 化学词汇背单词</h1>
+    <header class="header">
+        <button class="header-back" id="backBtn">←</button>
+        <h1 id="pageTitle">背单词</h1>
+        <div style="width: 40px;"></div>
+    </header>
+    
+    <div class="page active" id="page-home">
+        <div class="stats" id="stats"></div>
+        <button class="btn btn-primary" id="btnStudy">🎯 开始新学</button>
+        <button class="btn btn-success" id="btnReview">📝 开始复习</button>
+        <button class="btn btn-warning" id="btnWrongReview">🔄 复习错题</button>
     </div>
-
-    <div class="content">
-        <!-- 首页 -->
-        <div class="page active" id="page-home">
-            <div class="today-progress">
-                <div class="today-title">📅 今日学习进度</div>
-                <div class="today-stats">
-                    <div class="today-stat">
-                        <div class="today-stat-value" id="todayNew">0</div>
-                        <div class="today-stat-label">新学</div>
-                    </div>
-                    <div class="today-stat">
-                        <div class="today-stat-value" id="todayReview">0</div>
-                        <div class="today-stat-label">复习</div>
-                    </div>
-                    <div class="today-stat">
-                        <div class="today-stat-value" id="todayAccuracy">--%</div>
-                        <div class="today-stat-label">正确率</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="wordbook-info">
-                <div class="wordbook-name" id="wordbookName">📚 化学词汇</div>
-                <div class="wordbook-stats" id="wordbookStats">共 20 个词汇</div>
-            </div>
-
-            <div class="stat-grid">
-                <div class="stat-item">
-                    <div class="stat-value" id="totalCount">0</div>
-                    <div class="stat-label">总词汇</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="learnedCount">0</div>
-                    <div class="stat-label">已学</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="masteredCount">0</div>
-                    <div class="stat-label">已掌握</div>
-                </div>
-            </div>
-
-            <div class="study-actions">
-                <div class="action-btn action-new" id="btnNewStudy">
-                    <div class="action-title">新学</div>
-                    <div class="action-desc">学习新单词</div>
-                </div>
-                <div class="action-btn action-review" id="btnReview">
-                    <div class="action-title">复习</div>
-                    <div class="action-desc">巩固已学单词</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 学习页面 -->
-        <div class="page" id="page-study">
-            <div id="studyReady">
-                <div class="card">
-                    <h3 style="margin-bottom: 12px;">📚 学习准备</h3>
-                    <div id="readyStats"></div>
-                </div>
-                <div class="study-actions">
-                    <div class="action-btn action-new" id="btnStartNew">
-                        <div class="action-title">新学</div>
-                        <div class="action-desc">学习新单词</div>
-                    </div>
-                    <div class="action-btn action-review" id="btnStartReview">
-                        <div class="action-title">复习</div>
-                        <div class="action-desc">巩固已学单词</div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="studyActive" class="hidden">
-                <div class="round-indicator" id="roundIndicator"></div>
-                
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-                </div>
-                <div class="progress-text" id="progressText">准备中...</div>
-
-                <div class="study-card" id="wordCard">
-                    <button class="speaker-btn" id="speakerBtn">🔊</button>
-                    <div class="word" id="displayWord">Apple</div>
-                    <div class="phonetic" id="displayPhonetic">/ˈæpəl/</div>
-                    <div class="meaning" id="displayMeaning">苹果</div>
-                    <div class="definition" id="displayDefinition">一种圆形甜水果</div>
-                    <div class="example" id="displayExample">An apple a day keeps the doctor away.</div>
-                </div>
-
-                <div class="options" id="optionsArea"></div>
-
-                <div class="next-btn-area">
-                    <button class="btn btn-primary hidden" id="btnNextWord">下一题</button>
-                </div>
-            </div>
-
-            <div id="studyComplete" class="hidden">
-                <div class="completion-card">
-                    <div class="completion-icon">🎉</div>
-                    <div class="completion-title" id="completeTitle">学习完成！</div>
-                    <div class="completion-subtitle" id="completeSubtitle">太棒了，继续保持！</div>
-                    <div class="stat-grid" style="margin-top: 24px;">
-                        <div class="stat-item">
-                            <div class="stat-value" id="completeCorrect">0</div>
-                            <div class="stat-label">正确</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="completeWrong">0</div>
-                            <div class="stat-label">错误</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="completeAccuracy">0%</div>
-                            <div class="stat-label">正确率</div>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" id="btnBackHome">返回首页</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 生词本页面 -->
-        <div class="page" id="page-newbook">
-            <div class="section-title">📖 生词本 <span class="word-category category-new">新词</span></div>
-            <div class="search-box">
-                <input type="text" class="search-input" id="newbookSearch" placeholder="搜索单词...">
-            </div>
-            <div class="word-list" id="newbookList">
-                <div class="empty-state">
-                    <div class="empty-icon">🎉</div>
-                    <p>太棒了，没有生词！</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 正在学页面 -->
-        <div class="page" id="page-learning">
-            <div class="section-title">📝 正在学 <span class="word-category category-learning">学习中</span></div>
-            <div class="search-box">
-                <input type="text" class="search-input" id="learningSearch" placeholder="搜索单词...">
-            </div>
-            <div class="word-list" id="learningList">
-                <div class="empty-state">
-                    <div class="empty-icon">📚</div>
-                    <p>暂无正在学习的单词</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 已学页面 -->
-        <div class="page" id="page-learned">
-            <div class="section-title">📚 已学 <span class="word-category category-learned">待复习</span></div>
-            <div class="search-box">
-                <input type="text" class="search-input" id="learnedSearch" placeholder="搜索单词...">
-            </div>
-            <div class="word-list" id="learnedList">
-                <div class="empty-state">
-                    <div class="empty-icon">📚</div>
-                    <p>暂无已学单词</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 已掌握页面 -->
-        <div class="page" id="page-mastered">
-            <div class="section-title">✅ 已掌握 <span class="word-category category-mastered">完全掌握</span></div>
-            <div class="search-box">
-                <input type="text" class="search-input" id="masteredSearch" placeholder="搜索单词...">
-            </div>
-            <div class="word-list" id="masteredList">
-                <div class="empty-state">
-                    <div class="empty-icon">📚</div>
-                    <p>暂无已掌握单词</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 设置页面 -->
-        <div class="page" id="page-settings">
-            <div class="card">
-                <div class="section-title">⚙️ 基础设置</div>
-                
-                <div class="settings-row">
-                    <span class="settings-label">🔊 是否朗读</span>
-                    <label class="switch">
-                        <input type="checkbox" id="settingSpeak" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="settings-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-                    <span class="settings-label">📝 选择题型（可多选）</span>
-                    <div class="checkbox-group">
-                        <label class="checkbox-item">
-                            <input type="checkbox" value="1" class="question-type" checked>
-                            <span>英选中</span>
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" value="2" class="question-type" checked>
-                            <span>中选英</span>
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" value="3" class="question-type" checked>
-                            <span>英选义</span>
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" value="4" class="question-type" checked>
-                            <span>义选英</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="section-title">📚 词书管理</div>
-                
-                <div class="settings-row">
-                    <span class="settings-label">当前词书</span>
-                    <span class="settings-value" id="currentWordbook">化学词汇</span>
-                </div>
-                
-                <div class="settings-row">
-                    <span class="settings-label">词汇数量</span>
-                    <span class="settings-value" id="wordCount">0</span>
-                </div>
-
-                <button class="btn btn-outline" id="btnImportWordbook" style="margin-top: 12px;">📥 导入新词书</button>
-                <button class="btn btn-danger" id="btnClearWordbook" style="margin-top: 8px;">🗑️ 清空当前词书</button>
-            </div>
-
-            <div class="card">
-                <div class="section-title">🎯 学习目标</div>
-                
-                <div class="settings-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-                    <span class="settings-label">每天新学多少个</span>
-                    <div class="select-group" id="dailyNewGroup">
-                        <button class="select-btn" data-value="10">10词</button>
-                        <button class="select-btn active" data-value="20">20词</button>
-                        <button class="select-btn" data-value="30">30词</button>
-                        <button class="select-btn" data-value="50">50词</button>
-                    </div>
-                </div>
-
-                <div class="settings-row" style="flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 12px;">
-                    <span class="settings-label">每天复习多少个</span>
-                    <div class="select-group" id="dailyReviewGroup">
-                        <button class="select-btn" data-value="10">10词</button>
-                        <button class="select-btn active" data-value="20">20词</button>
-                        <button class="select-btn" data-value="30">30词</button>
-                        <button class="select-btn" data-value="50">50词</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="section-title">🏆 掌握设置</div>
-                
-                <div class="settings-row">
-                    <span class="settings-label">🗡️ 是否允许"斩"</span>
-                    <label class="switch">
-                        <input type="checkbox" id="settingAllowZhan" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="settings-row">
-                    <span class="settings-label">连续正确多少次算掌握</span>
-                    <select id="settingMasterCount">
-                        <option value="3">3次</option>
-                        <option value="4">4次</option>
-                        <option value="5" selected>5次</option>
-                        <option value="6">6次</option>
-                        <option value="8">8次</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="section-title">🗂️ 数据管理</div>
-                
-                <button class="btn btn-outline" id="btnResetProgress" style="margin-bottom: 8px;">📊 重置学习进度</button>
-                <button class="btn btn-danger" id="btnClearData">🗑️ 清除所有数据</button>
-            </div>
-        </div>
-
-        <!-- 导入页面 -->
-        <div class="page" id="page-import">
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📤</div>
-                <div class="upload-text">点击上传词书文件</div>
-                <div class="upload-text" style="font-size: 12px; margin-top: 8px;">
-                    格式：英文|中文|定义|例句<br>
-                    每行一个单词
-                </div>
-            </div>
-            <input type="file" id="fileInput" accept=".txt">
-
-            <div class="preview-area hidden" id="previewArea">
-                <div class="preview-title">📋 预览（前20条）</div>
-                <div class="preview-list" id="previewList"></div>
-                <button class="btn btn-primary" id="btnConfirmImport" style="margin-top: 12px;">确认导入</button>
-            </div>
-
-            <div class="card">
-                <h3 style="margin-bottom: 12px;">💡 格式说明</h3>
-                <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-                    每行一个单词，格式：<br>
-                    <code style="background: #F0F0F0; padding: 2px 6px; border-radius: 4px;">英文|中文|定义|例句</code><br><br>
-                    <strong>示例：</strong><br>
-                    <code>Proton|质子|带正电的亚原子粒子|The proton has a positive charge.</code>
-                </p>
-            </div>
-
-            <div class="card">
-                <h3 style="margin-bottom: 12px;">📥 内置词书（化学词汇）</h3>
-                <button class="btn btn-primary" id="btnLoadBuiltIn">加载内置化学词汇</button>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">
-                    已包含20个常用化学专业词汇
-                </p>
-            </div>
+    
+    <div class="page" id="page-study">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+        <div id="studyContent"></div>
+    </div>
+    
+    <div class="page" id="page-complete">
+        <div class="complete-page">
+            <div class="complete-icon">🎉</div>
+            <h2 style="margin-bottom: 8px;">学习完成!</h2>
+            <p style="color: var(--text-light); margin-bottom: 30px;" id="completeSubtitle">太棒了，继续保持！</p>
+            <button class="btn btn-primary" id="btnBackHome">返回首页</button>
         </div>
     </div>
-
-    <!-- 底部导航 -->
-    <div class="bottom-nav">
-        <div class="nav-item active" data-page="home">
-            <div class="nav-icon">🏠</div>
-            <div>首页</div>
+    
+    <div class="page" id="page-words"><div class="word-list" id="wordListAll"></div></div>
+    <div class="page" id="page-learning"><div class="word-list" id="wordListLearning"></div></div>
+    <div class="page" id="page-learned"><div class="word-list" id="wordListLearned"></div></div>
+    <div class="page" id="page-mastered"><div class="word-list" id="wordListMastered"></div></div>
+    <div class="page" id="page-wrong"><div class="word-list" id="wordListWrong"></div></div>
+    
+    <div class="page" id="page-settings">
+        <div class="setting-group">
+            <div class="setting-item"><span>每日新学数量</span><select class="setting-select" id="settingNewCount"><option value="10">10</option><option value="20" selected>20</option><option value="30">30</option><option value="50">50</option></select></div>
+            <div class="setting-item"><span>每日复习数量</span><select class="setting-select" id="settingReviewCount"><option value="10">10</option><option value="20" selected>20</option><option value="30">30</option><option value="50">50</option></select></div>
+            <div class="setting-item"><span>连续正确多少次掌握</span><select class="setting-select" id="settingMasterCount"><option value="3">3</option><option value="5">5</option><option value="8">8</option></select></div>
+            <div class="setting-item"><span>朗读发音</span><button class="toggle" id="settingSpeak"></button></div>
         </div>
-        <div class="nav-item" data-page="newbook">
-            <div class="nav-icon">📖</div>
-            <div>生词本</div>
-        </div>
-        <div class="nav-item" data-page="learning">
-            <div class="nav-icon">📝</div>
-            <div>学习中</div>
-        </div>
-        <div class="nav-item" data-page="mastered">
-            <div class="nav-icon">✅</div>
-            <div>已掌握</div>
-        </div>
-        <div class="nav-item" data-page="settings">
-            <div class="nav-icon">⚙️</div>
-            <div>设置</div>
-        </div>
+        <h3 style="margin: 20px 0 12px; font-size: 15px;">导入词书</h3>
+        <div class="upload-area" id="uploadArea"><input type="file" id="fileInput" accept=".txt"><div style="font-size: 48px; margin-bottom: 12px;">📚</div><div style="font-size: 14px; color: var(--text-light);">点击上传 txt 文件<br><small>格式：单词 释义</small></div></div>
+        <button class="btn btn-danger" id="btnClearData" style="margin-top: 30px;">清空所有数据</button>
     </div>
+    
+    <nav class="nav">
+        <button class="nav-item active" data-page="home">🏠 首页</button>
+        <button class="nav-item" data-page="words">📚 全部</button>
+        <button class="nav-item" data-page="learning">📖 在学</button>
+        <button class="nav-item" data-page="wrong">❌ 错题</button>
+        <button class="nav-item" data-page="settings">⚙️ 设置</button>
+    </nav>
 
-    <script>
-    // ==================== 数据管理 ====================
-    const DB = {
-        getData() {
-            const data = localStorage.getItem('flashcardData_v3');
-            if (data) {
-                return JSON.parse(data);
-            }
-            return {
-                words: [],
-                // 单词状态记录
-                wordProgress: {}, // {word: {status: 'new'|'learning'|'learned'|'mastered', phase: 0-4, correctStreak: 0}}
-                // 每日统计
-                lastStudyDate: null,
-                todayNewLearned: 0,
-                todayReviewed: 0,
-                todayCorrect: 0,
-                todayWrong: 0,
-                // 词书信息
-                wordbookName: '化学词汇',
-                // 设置
-                settings: {
-                    speak: true,
-                    questionTypes: [1, 2, 3, 4],
-                    dailyNew: 20,
-                    dailyReview: 20,
-                    allowZhan: true,
-                    masterCount: 5
-                }
-            };
-        },
-
-        saveData(data) {
-            localStorage.setItem('flashcardData_v3', JSON.stringify(data));
-        },
-
-        getWordProgress(word) {
-            const data = this.getData();
-            if (!data.wordProgress[word]) {
-                data.wordProgress[word] = {
-                    status: 'new', // new, learning, learned, mastered
-                    phase: 0,      // 0=卡片, 1=英选中, 2=中选英, 3=英选义, 4=义选英
-                    correctStreak: 0 // 连续正确次数
-                };
-            }
-            return data.wordProgress[word];
-        },
-
-        updateWordProgress(word, updates) {
-            const data = this.getData();
-            const progress = this.getWordProgress(word);
-            Object.assign(progress, updates);
-            data.wordProgress[word] = progress;
-            this.saveData(data);
-            return progress;
-        },
-
-        resetProgress() {
-            const data = this.getData();
-            data.wordProgress = {};
-            data.todayNewLearned = 0;
-            data.todayReviewed = 0;
-            data.todayCorrect = 0;
-            data.todayWrong = 0;
-            data.lastStudyDate = null;
-            this.saveData(data);
-        },
-
-        clearAll() {
-            localStorage.removeItem('flashcardData_v3');
-        },
-
-        clearWordbook() {
-            const data = this.getData();
-            data.words = [];
-            data.wordProgress = {};
-            data.todayNewLearned = 0;
-            data.todayReviewed = 0;
-            data.todayCorrect = 0;
-            data.todayWrong = 0;
-            data.lastStudyDate = null;
-            this.saveData(data);
-        }
-    };
-
-    // ==================== 示例词书（化学词汇） ====================
-    const BUILTIN_WORDS = [
-        { word: "Proton", meaning: "质子", definition: "带正电荷的亚原子粒子，位于原子核中", example: "The proton has a positive charge, while the electron has a negative charge." },
-        { word: "Neutron", meaning: "中子", definition: "不带电荷的亚原子粒子，位于原子核中", example: "The number of neutrons in an atom determines its isotope." },
-        { word: "Electron", meaning: "电子", definition: "带负电荷的亚原子粒子，绕原子核运动", example: "Electrons orbit the nucleus in specific energy levels." },
-        { word: "Molecule", meaning: "分子", definition: "由两个或多个原子通过化学键结合而成的粒子", example: "A water molecule consists of two hydrogen atoms and one oxygen atom." },
-        { word: "Atom", meaning: "原子", definition: "化学元素的基本单位，由原子核和电子组成", example: "Every element is composed of atoms of a single type." },
-        { word: "Catalyst", meaning: "催化剂", definition: "加快化学反应速率而本身不被消耗的物质", example: "Enzymes are biological catalysts that speed up metabolic reactions." },
-        { word: "Oxidation", meaning: "氧化", definition: "原子或分子失去电子的化学反应过程", example: "Rust is the result of oxidation of iron when exposed to oxygen." },
-        { word: "Reduction", meaning: "还原", definition: "原子或分子获得电子的化学反应过程", example: "The reduction of iron ore produces metallic iron." },
-        { word: "Equilibrium", meaning: "平衡", definition: "正逆反应速率相等，反应物和产物浓度不再改变的状态", example: "In a state of equilibrium, the forward and reverse reactions occur at equal rates." },
-        { word: "Isotope", meaning: "同位素", definition: "具有相同质子数但中子数不同的原子", example: "Carbon-12 and Carbon-14 are isotopes of carbon with different mass numbers." },
-        { word: "Ion", meaning: "离子", definition: "获得或失去电子而带净电荷的原子或分子", example: "Sodium ions and chloride ions combine to form sodium chloride." },
-        { word: "Covalent", meaning: "共价键", definition: "两个原子共享电子对形成的化学键", example: "A water molecule contains covalent bonds between hydrogen and oxygen atoms." },
-        { word: "Ionic", meaning: "离子键", definition: "通过正负离子间的静电吸引力形成的化学键", example: "Sodium chloride forms through ionic bonding between Na+ and Cl- ions." },
-        { word: "Periodic", meaning: "元素周期表", definition: "按原子序数和化学性质排列的化学元素表格", example: "Elements in the same group of the periodic table have similar chemical properties." },
-        { word: "Valence", meaning: "价电子", definition: "原子最外层电子，决定元素的化学性质", example: "Carbon has four valence electrons, allowing it to form four bonds." },
-        { word: "Reaction", meaning: "化学反应", definition: "物质发生变化产生新物质的过程", example: "The chemical reaction between hydrogen and oxygen produces water." },
-        { word: "Solution", meaning: "溶液", definition: "一种或多种物质均匀分散在另一种物质中的混合物", example: "Salt dissolves in water to form a homogeneous solution." },
-        { word: "Acid", meaning: "酸", definition: "能在水溶液中释放氢离子产生H+的物质", example: "Hydrochloric acid is a strong acid commonly found in the stomach." },
-        { word: "Base", meaning: "碱", definition: "能在水溶液中释放氢氧根离子产生OH-的物质", example: "Sodium hydroxide is a strong base used in many industrial processes." },
-        { word: "Stoichiometry", meaning: "化学计量", definition: "研究化学反应中反应物和产物的数量关系的学科", example: "Stoichiometry helps calculate the exact amounts of reactants needed." }
-    ];
-
-    // ==================== 学习状态管理 ====================
-    let studyState = {
-        mode: null,              // 'new' 或 'review'
-        phase: 0,                // 0=卡片, 1=英选中, 2=中选英, 3=英选义, 4=义选英
-        currentIndex: 0,         // 当前在wordQueue中的索引
-        wordQueue: [],           // 当前题型的单词队列
-        allWordsQueue: [],       // 全部单词队列
-        correctCount: 0,
-        wrongCount: 0,
-        enabledTypes: [1, 2, 3, 4],
-        isShowingCard: false,
-        isRetrying: false,
-        retryQueue: [],
-        phaseComplete: false
-    };
-
-    // ==================== 工具函数 ====================
-    function showToast(message) {
-        const existing = document.querySelector('.toast');
-        if (existing) existing.remove();
-        
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        
-        setTimeout(() => toast.remove(), 2000);
-    }
-
-    function speak(word) {
-        const data = DB.getData();
-        if (!data.settings.speak) return;
-        
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(word);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.8;
-            window.speechSynthesis.speak(utterance);
-        }
-    }
-
-    function shuffle(array) {
-        const arr = [...array];
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-    }
-
-    function getToday() {
-        return new Date().toDateString();
-    }
-
-    // ==================== 单词分类统计 ====================
-    function getWordCategories() {
-        const data = DB.getData();
-        const newWords = [];
-        const learningWords = [];
-        const learnedWords = [];
-        const masteredWords = [];
-
-        data.words.forEach(w => {
-            const progress = DB.getWordProgress(w.word);
-            switch (progress.status) {
-                case 'new':
-                    newWords.push(w);
-                    break;
-                case 'learning':
-                    learningWords.push(w);
-                    break;
-                case 'learned':
-                    learnedWords.push(w);
-                    break;
-                case 'mastered':
-                    masteredWords.push(w);
-                    break;
-            }
+<script>
+(function() {
+    'use strict';
+    const STORAGE_KEY = 'flashcard_v3';
+    const SETTINGS_KEY = 'flashcard_settings_v3';
+    const defaultSettings = { newCount: 20, reviewCount: 20, masterCount: 3, speak: false };
+    
+    function getData() { const d = localStorage.getItem(STORAGE_KEY); return d ? JSON.parse(d) : { words: [], lastDate: '' }; }
+    function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+    function getSettings() { const s = localStorage.getItem(SETTINGS_KEY); return s ? {...defaultSettings, ...JSON.parse(s)} : defaultSettings; }
+    function saveSettings(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
+    
+    let currentPage = 'home';
+    let study = { type: '', words: [], idx: 0, stage: 0, wrongQueue: [] };
+    
+    function classifyWords() {
+        const d = getData();
+        const now = new Date().toDateString();
+        if (d.lastDate !== now) { d.words.forEach(w => { w.todayNew = 0; w.todayReview = 0; }); d.lastDate = now; saveData(d); }
+        const w = { all: d.words, new: [], learning: [], learned: [], mastered: [], wrong: [] };
+        d.words.forEach(v => {
+            if (v.wrongCount >= 3) w.wrong.push(v);
+            else if (v.streak >= getSettings().masterCount) w.mastered.push(v);
+            else if (v.stage >= 4) w.learned.push(v);
+            else if (v.stage > 0 || v.showedCard) w.learning.push(v);
+            else w.new.push(v);
         });
-
-        return { newWords, learningWords, learnedWords, masteredWords };
+        return w;
     }
-
-    // ==================== 界面渲染 ====================
-    function updateStats() {
-        const data = DB.getData();
-        const categories = getWordCategories();
-        
-        const total = data.words.length;
-        const mastered = categories.masteredWords.length;
-        const learned = categories.learnedWords.length + categories.learningWords.length;
-
-        document.getElementById('totalCount').textContent = total;
-        document.getElementById('learnedCount').textContent = learned;
-        document.getElementById('masteredCount').textContent = mastered;
-
-        document.getElementById('wordbookName').textContent = '📚 ' + data.wordbookName;
-        document.getElementById('wordbookStats').textContent = `共 ${total} 个词汇 | 新词 ${categories.newWords.length} | 学习中 ${categories.learningWords.length} | 已学 ${learned} | 已掌握 ${mastered}`;
-        document.getElementById('currentWordbook').textContent = data.wordbookName;
-        document.getElementById('wordCount').textContent = total;
-
-        const today = getToday();
-        if (data.lastStudyDate === today) {
-            document.getElementById('todayNew').textContent = data.todayNewLearned;
-            document.getElementById('todayReview').textContent = data.todayReviewed;
-            const totalToday = data.todayCorrect + data.todayWrong;
-            const accuracy = totalToday > 0 ? Math.round((data.todayCorrect / totalToday) * 100) : 0;
-            document.getElementById('todayAccuracy').textContent = accuracy + '%';
-        } else {
-            document.getElementById('todayNew').textContent = '0';
-            document.getElementById('todayReview').textContent = '0';
-            document.getElementById('todayAccuracy').textContent = '--%';
-        }
-
-        updateStudyReady();
-        renderNewbookList();
-        renderLearningList();
-        renderLearnedList();
-        renderMasteredList();
-    }
-
-    function updateStudyReady() {
-        const data = DB.getData();
-        const categories = getWordCategories();
-
-        // 新学 = 新词 + 正在学（还没走完4个题型）
-        const newStudyCount = categories.newWords.length + categories.learningWords.length;
-        // 复习 = 已学（走完4个题型但没掌握）
-        const reviewCount = categories.learnedWords.length;
-
-        const statsHtml = `
-            <p style="font-size: 14px; color: var(--text-secondary);">
-                新学：<strong style="color: var(--primary);">${newStudyCount}</strong> 个<br>
-                可复习：<strong style="color: var(--success);">${reviewCount}</strong> 个
-            </p>
-        `;
-        document.getElementById('readyStats').innerHTML = statsHtml;
-
-        document.getElementById('btnStartNew').style.opacity = newStudyCount > 0 ? '1' : '0.5';
-        document.getElementById('btnStartReview').style.opacity = reviewCount > 0 ? '1' : '0.5';
-    }
-
-    function getPhaseText(phase) {
-        const texts = ['', '英选中', '中选英', '英选义', '义选英'];
-        return texts[phase] || '';
-    }
-
-    function renderWordList(containerId, words, filter = '', extraRender) {
-        const data = DB.getData();
-        let filteredWords = words;
-        
-        if (filter) {
-            filteredWords = words.filter(w => 
-                w.word.toLowerCase().includes(filter.toLowerCase()) ||
-                w.meaning.includes(filter)
-            );
-        }
-
-        const container = document.getElementById(containerId);
-
-        if (filteredWords.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">📚</div>
-                    <p>${filter ? '没有匹配的单词' : '暂无单词'}</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = filteredWords.map(w => {
-            const progress = DB.getWordProgress(w.word);
-            const extra = extraRender ? extraRender(w, progress) : '';
-            return `
-                <div class="word-item">
-                    <div class="word-info">
-                        <h4>${w.word}</h4>
-                        <p>${w.meaning}</p>
-                    </div>
-                    ${extra}
-                </div>
-            `;
-        }).join('');
-    }
-
-    function renderNewbookList(filter = '') {
-        const categories = getWordCategories();
-        renderWordList('newbookList', categories.newWords, filter);
-    }
-
-    function renderLearningList(filter = '') {
-        const categories = getWordCategories();
-        renderWordList('learningList', categories.learningWords, filter, (w, progress) => {
-            const phaseText = getPhaseText(progress.phase);
-            return `<div class="word-stats"><span style="color: var(--warning);">进度: ${phaseText}</span></div>`;
-        });
-    }
-
-    function renderLearnedList(filter = '') {
-        const categories = getWordCategories();
-        renderWordList('learnedList', categories.learnedWords, filter, (w, progress) => {
-            return `<div class="word-stats"><span style="color: var(--success);">连对 ${progress.correctStreak} 次</span></div>`;
-        });
-    }
-
-    function renderMasteredList(filter = '') {
-        const categories = getWordCategories();
-        renderWordList('masteredList', categories.masteredWords, filter, (w, progress) => {
-            return `<div class="word-stats"><span class="streak">已掌握</span></div>`;
-        });
-    }
-
-    // ==================== 页面切换 ====================
-    function switchPage(pageName) {
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    
+    function showPage(name) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        
-        document.querySelector(`.nav-item[data-page="${pageName}"]`).classList.add('active');
-        document.getElementById('page-' + pageName).classList.add('active');
+        document.getElementById('page-' + name)?.classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === name));
+        const titles = { home: '背单词', words: '生词本', learning: '正在学', learned: '已学', mastered: '已掌握', wrong: '错词本', settings: '设置', study: '学习中', complete: '学习完成' };
+        document.getElementById('pageTitle').textContent = titles[name] || '背单词';
+        document.getElementById('backBtn').classList.toggle('show', ['study', 'complete'].includes(name));
+        currentPage = name;
+        if (name === 'home') updateHome();
+        else if (['words','learning','learned','mastered','wrong'].includes(name)) renderList(name);
+        else if (name === 'settings') loadSettings();
     }
-
-    // ==================== 学习流程 ====================
-    function startStudy(mode) {
-        const data = DB.getData();
-        const categories = getWordCategories();
-        
-        // 重置学习状态
-        studyState.mode = mode;
-        studyState.phase = mode === 'new' ? 0 : 1;
-        studyState.currentIndex = 0;
-        studyState.correctCount = 0;
-        studyState.wrongCount = 0;
-        studyState.enabledTypes = [...data.settings.questionTypes].sort((a, b) => a - b);
-        studyState.isShowingCard = false;
-        studyState.isRetrying = false;
-        studyState.retryQueue = [];
-        studyState.phaseComplete = false;
-
-        // 选择单词
-        if (mode === 'new') {
-            // 新学：新词 + 正在学（还没走完4个题型）
-            let wordsToStudy = [];
-            
-            // 先处理正在学的（从上次进度继续）
-            categories.learningWords.forEach(w => {
-                const progress = DB.getWordProgress(w.word);
-                wordsToStudy.push({ word: w, startPhase: progress.phase });
-            });
-            
-            // 再添加新词
-            const newWordCount = Math.min(
-                categories.newWords.length,
-                data.settings.dailyNew - categories.learningWords.length
-            );
-            categories.newWords.slice(0, newWordCount).forEach(w => {
-                wordsToStudy.push({ word: w, startPhase: 0 });
-            });
-            
-            // 随机打乱
-            studyState.studyWords = shuffle(wordsToStudy);
-        } else {
-            // 复习：已学（走完4个题型但没掌握）
-            const shuffled = shuffle(categories.learnedWords);
-            const count = Math.min(shuffled.length, data.settings.dailyReview);
-            studyState.studyWords = shuffled.slice(0, count).map(w => ({ word: w, startPhase: 1 }));
-        }
-
-        if (studyState.studyWords.length === 0) {
-            showToast(mode === 'new' ? '没有可新学的单词' : '没有可复习的单词');
-            return;
-        }
-
-        // 初始化队列
-        studyState.allWordsQueue = studyState.studyWords.map(item => item.word);
-        studyState.wordQueue = [...studyState.allWordsQueue];
-
-        // 重置每日统计
-        const today = getToday();
-        if (data.lastStudyDate !== today) {
-            data.lastStudyDate = today;
-            data.todayNewLearned = 0;
-            data.todayReviewed = 0;
-            data.todayCorrect = 0;
-            data.todayWrong = 0;
-            DB.saveData(data);
-        }
-
-        // 显示学习界面
-        document.getElementById('studyReady').classList.add('hidden');
-        document.getElementById('studyActive').classList.remove('hidden');
-        document.getElementById('studyComplete').classList.add('hidden');
-
-        // 开始学习
-        console.log('[学习] 开始学习，模式:', mode, '单词数量:', studyState.wordQueue.length);
-        nextStep();
+    
+    function updateHome() {
+        const w = classifyWords();
+        document.getElementById('stats').innerHTML = `<div class="stat-item"><div class="stat-num">${w.new.length}</div><div class="stat-label">待新学</div></div><div class="stat-item"><div class="stat-num">${w.learning.length}</div><div class="stat-label">正在学</div></div><div class="stat-item"><div class="stat-num">${w.mastered.length}</div><div class="stat-label">已掌握</div></div><div class="stat-item"><div class="stat-num">${w.wrong.length}</div><div class="stat-label">错词</div></div>`;
+        document.getElementById('btnStudy').disabled = w.new.length === 0 && w.learning.length === 0;
+        document.getElementById('btnReview').disabled = w.learned.length === 0;
+        document.getElementById('btnWrongReview').disabled = w.wrong.length === 0;
     }
-
-    function nextStep() {
-        console.log('[nextStep] 开始执行，currentIndex:', studyState.currentIndex, 'wordQueue长度:', studyState.wordQueue.length, 'phase:', studyState.phase);
-        
-        // 边界检查
-        if (studyState.wordQueue.length === 0) {
-            console.error('[nextStep] 单词队列为空！');
-            showToast('加载失败，请重试');
-            completeStudy();
-            return;
-        }
-        
-        // 处理错题补做
-        if (studyState.retryQueue.length > 0) {
-            studyState.isRetrying = true;
-            const item = studyState.retryQueue.shift();
-            studyState.currentIndex = studyState.wordQueue.findIndex(w => w.word.word === item.word.word);
-            if (studyState.currentIndex === -1) {
-                nextStep();
-                return;
-            }
-            // 错题补做只做英选中
-            showQuestion(item.word, 1);
-            return;
-        }
-
-        studyState.isRetrying = false;
-
-        // 检查当前题型是否完成
-        if (studyState.currentIndex >= studyState.wordQueue.length) {
-            console.log('[nextStep] 队列已遍历完，调用finishCurrentPhase');
-            finishCurrentPhase();
-            return;
-        }
-
-        // 显示当前单词
-        const item = studyState.wordQueue[studyState.currentIndex];
-        console.log('[nextStep] 显示单词:', item?.word?.word || item?.word);
-        
-        if (studyState.mode === 'new' && studyState.phase === 0) {
-            showWordCard(item.word);
-        } else {
-            showQuestion(item.word, studyState.phase);
-        }
-    }
-
-    function finishCurrentPhase() {
-        // 检查是否有错题需要补做
-        if (studyState.retryQueue.length > 0) {
-            studyState.currentIndex = 0;
-            updateUI();
-            nextStep();
-            return;
-        }
-
-        // 新学模式：处理单词状态转换
-        if (studyState.mode === 'new') {
-            // 遍历所有本轮学过的单词
-            studyState.studyWords.forEach(item => {
-                const progress = DB.getWordProgress(item.word.word);
-                if (progress.status === 'new') {
-                    // 展示卡片后：新词 -> 正在学
-                    DB.updateWordProgress(item.word.word, { status: 'learning', phase: 1 });
-                } else if (progress.status === 'learning' && progress.phase < 4) {
-                    // 更新进度到下一题型
-                    const nextPhase = getNextPhaseFrom(progress.phase);
-                    DB.updateWordProgress(item.word.word, { phase: nextPhase });
-                }
-            });
-        }
-
-        // 获取下一个题型
-        const nextPhase = getNextPhase();
-        if (nextPhase === -1) {
-            completeStudy();
-            return;
-        }
-
-        studyState.phase = nextPhase;
-        studyState.currentIndex = 0;
-        
-        // 新学模式：重新构建所有单词的队列
-        if (studyState.mode === 'new') {
-            studyState.allWordsQueue = [...studyState.studyWords.map(item => item.word)];
-            studyState.wordQueue = [...studyState.allWordsQueue];
-        } else {
-            // 复习模式：直接从allWordsQueue构建
-            studyState.wordQueue = [...studyState.allWordsQueue];
-        }
-        
-        updateUI();
-        nextStep();
-    }
-
-    function getNextPhaseFrom(currentPhase) {
-        const types = studyState.enabledTypes;
-        const idx = types.indexOf(currentPhase + 1);
-        if (idx !== -1 && idx < types.length - 1) {
-            return types[idx + 1];
-        }
-        return -1;
-    }
-
-    function getNextPhase() {
-        const types = studyState.enabledTypes;
-        const idx = types.indexOf(studyState.phase);
-        if (idx !== -1 && idx < types.length - 1) {
-            return types[idx + 1];
-        }
-        return -1;
-    }
-
-    function updateUI() {
-        const progressFill = document.getElementById('progressFill');
-        const progressText = document.getElementById('progressText');
-        const total = studyState.wordQueue.length;
-        const current = studyState.currentIndex + 1;
-        const percent = total > 0 ? (current / total) * 100 : 0;
-        progressFill.style.width = percent + '%';
-        progressText.textContent = `${current}/${total}`;
-
-        updateRoundIndicator();
-    }
-
-    function updateRoundIndicator() {
-        const indicator = document.getElementById('roundIndicator');
-        const types = studyState.enabledTypes;
-        const modeNames = ['', '英选中', '中选英', '英选义', '义选英'];
-        
-        let dots = [];
-        
-        if (studyState.mode === 'new') {
-            // 新学模式：卡片 + 各题型
-            dots.push(`<span class="round-dot ${studyState.phase === 0 ? 'active' : 'completed'}"></span>`);
-            types.forEach(t => {
-                const idx = types.indexOf(t);
-                let className = 'round-dot';
-                if (studyState.phase > t) className += ' completed';
-                else if (studyState.phase === t) className += ' active';
-                dots.push(`<span class="${className}"></span>`);
-            });
-        } else {
-            // 复习模式：直接从题型开始
-            types.forEach(t => {
-                let className = 'round-dot';
-                if (studyState.phase > t) className += ' completed';
-                else if (studyState.phase === t) className += ' active';
-                dots.push(`<span class="${className}"></span>`);
-            });
-        }
-        
-        indicator.innerHTML = dots.join('');
-    }
-
-    function showWordCard(word) {
-        console.log('[showWordCard] 显示单词卡片:', word.word);
-        studyState.isShowingCard = true;
-        
-        // 确保 DOM 元素存在
-        const card = document.getElementById('wordCard');
-        const optionsArea = document.getElementById('optionsArea');
-        const nextBtn = document.getElementById('btnNextWord');
-        
-        if (!card || !optionsArea || !nextBtn) {
-            console.error('[showWordCard] DOM 元素缺失！');
-            showToast('页面加载错误，请刷新重试');
-            return;
-        }
-        
-        // 移除之前的斩按钮
-        const oldZhan = card.querySelector('.zhan-btn');
-        if (oldZhan) oldZhan.remove();
-
-        updateUI();
-
-        // 显示卡片内容
-        document.getElementById('displayWord').textContent = word.word;
-        document.getElementById('displayPhonetic').textContent = '/' + word.word + '/';
-        document.getElementById('displayMeaning').textContent = word.meaning;
-        document.getElementById('displayMeaning').style.visibility = 'visible';
-        document.getElementById('displayDefinition').textContent = word.definition;
-        document.getElementById('displayDefinition').style.visibility = 'visible';
-        document.getElementById('displayExample').textContent = word.example;
-        document.getElementById('displayExample').style.visibility = 'visible';
-
-        card.classList.remove('hidden');
-        card.style.display = 'flex';
-        optionsArea.innerHTML = '';
-        optionsArea.style.display = 'none';
-        nextBtn.classList.remove('hidden');
-        nextBtn.style.display = 'block';
-        nextBtn.textContent = '下一题';
-
-        speak(word.word);
-
-        // 斩按钮
-        const data = DB.getData();
-        if (data.settings.allowZhan) {
-            const zhanBtn = document.createElement('button');
-            zhanBtn.className = 'zhan-btn';
-            zhanBtn.textContent = '🗡️ 斩';
-            zhanBtn.onclick = () => zhanWord(word);
-            card.appendChild(zhanBtn);
-        }
-    }
-
-    function zhanWord(word) {
-        const data = DB.getData();
-        
-        // 标记为已掌握
-        DB.updateWordProgress(word.word, {
-            status: 'mastered',
-            phase: 4,
-            correctStreak: data.settings.masterCount
+    
+    function renderList(type) {
+        const w = classifyWords();
+        const list = w[type] || [];
+        const container = document.getElementById('wordList' + type.charAt(0).toUpperCase() + type.slice(1));
+        if (!container) return;
+        if (list.length === 0) { container.innerHTML = '<div class="empty-state"><p>暂无单词</p></div>'; return; }
+        let html = '';
+        list.forEach(v => {
+            let status = '新词', cls = 'status-new';
+            if (v.wrongCount >= 3) { status = '错' + v.wrongCount + '次'; cls = 'status-wrong'; }
+            else if (v.streak >= getSettings().masterCount) { status = '已掌握'; cls = 'status-mastered'; }
+            else if (v.stage >= 4) { status = '已学'; cls = 'status-learned'; }
+            else if (v.stage > 0) { status = '学习中'; cls = 'status-learning'; }
+            html += `<div class="word-item"><div class="word-info"><h3>${v.word}</h3><p>${v.meaning}</p></div><span class="word-status ${cls}">${status}</span></div>`;
         });
-        
-        // 统计
-        data.todayNewLearned++;
-        data.todayCorrect++;
-        DB.saveData(data);
-        
-        showToast(`🗡️ ${word.word} 已掌握！`);
-        
-        // 从本轮移除
-        const idx = studyState.studyWords.findIndex(item => item.word.word === word.word);
-        if (idx !== -1) {
-            studyState.studyWords.splice(idx, 1);
-        }
-        
-        studyState.currentIndex++;
-        nextStep();
+        container.innerHTML = html;
     }
-
-    function showQuestion(word, phase) {
-        console.log('[showQuestion] 显示题目，word:', word.word, 'phase:', phase);
-        studyState.isShowingCard = false;
+    
+    function startStudy(type) {
+        const w = classifyWords();
+        const s = getSettings();
+        let words = [];
+        if (type === 'new') words = [...w.new.slice(0, s.newCount), ...w.learning.slice(0, Math.max(0, s.newCount - w.new.length))];
+        else if (type === 'review') words = w.learned.slice(0, s.reviewCount);
+        else words = w.wrong;
+        if (words.length === 0) { showToast('没有可学习的单词'); return; }
+        study = { type, words, idx: 0, stage: type === 'new' ? 0 : 1, wrongQueue: [] };
+        showPage('study');
+        renderStep();
+    }
+    
+    function renderStep() {
+        const content = document.getElementById('studyContent');
+        const progress = document.getElementById('progressFill');
+        const total = study.words.length * (study.type === 'new' ? 5 : 4);
+        const current = study.idx * (study.type === 'new' ? 5 : 4) + study.stage - (study.type === 'new' ? 0 : 1);
+        progress.style.width = Math.min(100, (current / total * 100)) + '%';
         
-        // 确保 DOM 元素存在
-        const card = document.getElementById('wordCard');
-        const optionsArea = document.getElementById('optionsArea');
-        const nextBtn = document.getElementById('btnNextWord');
+        if (study.wrongQueue.length > 0) { renderQuestion(study.wrongQueue.shift()); return; }
+        if (study.idx >= study.words.length) { completeStudy(); return; }
         
-        if (!card || !optionsArea || !nextBtn) {
-            console.error('[showQuestion] DOM 元素缺失！');
-            showToast('页面加载错误，请刷新重试');
-            return;
-        }
-        
-        // 移除斩按钮
-        const oldZhan = card.querySelector('.zhan-btn');
-        if (oldZhan) oldZhan.remove();
-
-        updateUI();
-
-        // 生成干扰选项
-        const data = DB.getData();
-        const otherWords = data.words.filter(w => w.word !== word.word);
-        let wrongOptions = [];
-        
-        if (otherWords.length >= 3) {
-            wrongOptions = shuffle(otherWords).slice(0, 3);
-        } else if (otherWords.length > 0) {
-            while (wrongOptions.length < 3) {
-                wrongOptions.push(otherWords[wrongOptions.length % otherWords.length]);
-            }
+        const word = study.words[study.idx];
+        if (study.type === 'new' && study.stage === 0) {
+            content.innerHTML = `<div class="word-card"><div class="word-text">${word.word}</div><div class="word-meaning">${word.meaning}</div></div><button class="btn btn-success" id="nextBtn">记住了 →</button>`;
+            document.getElementById('nextBtn').onclick = () => { word.showedCard = true; saveData(getData()); study.stage = 1; renderStep(); };
+            if (getSettings().speak && 'speechSynthesis' in window) speechSynthesis.speak(new SpeechSynthesisUtterance(word.word));
         } else {
-            wrongOptions = [
-                { word: '选项A', meaning: '选项A', definition: '这是干扰选项A' },
-                { word: '选项B', meaning: '选项B', definition: '这是干扰选项B' },
-                { word: '选项C', meaning: '选项C', definition: '这是干扰选项C' }
-            ];
-        }
-
-        let question, options, correctAnswer;
-
-        switch (phase) {
-            case 1: // 英选中
-                question = word.word;
-                options = shuffle([word.meaning, ...wrongOptions.map(w => w.meaning)]);
-                correctAnswer = word.meaning;
-                speak(word.word);
-                break;
-            case 2: // 中选英
-                question = word.meaning;
-                options = shuffle([word.word, ...wrongOptions.map(w => w.word)]);
-                correctAnswer = word.word;
-                break;
-            case 3: // 英选义
-                question = word.word;
-                options = shuffle([word.definition, ...wrongOptions.map(w => w.definition)]);
-                correctAnswer = word.definition;
-                speak(word.word);
-                break;
-            case 4: // 义选英
-                question = word.definition;
-                options = shuffle([word.word, ...wrongOptions.map(w => w.word)]);
-                correctAnswer = word.word;
-                break;
-        }
-
-        // 更新显示
-        document.getElementById('displayWord').textContent = question;
-        document.getElementById('displayPhonetic').textContent = '';
-        document.getElementById('displayMeaning').textContent = '';
-        document.getElementById('displayMeaning').style.visibility = 'hidden';
-        document.getElementById('displayDefinition').textContent = '';
-        document.getElementById('displayDefinition').style.visibility = 'hidden';
-        document.getElementById('displayExample').textContent = '';
-        document.getElementById('displayExample').style.visibility = 'hidden';
-
-        // 渲染选项
-        optionsArea.innerHTML = '';
-        optionsArea.style.display = 'grid';
-        options.forEach(opt => {
-            const div = document.createElement('div');
-            div.className = 'option';
-            div.textContent = opt;
-            div.dataset.answer = opt;
-            div.dataset.correct = (opt === correctAnswer).toString();
-            div.onclick = function() { handleAnswer(this, correctAnswer, word, phase); };
-            optionsArea.appendChild(div);
-        });
-
-        card.style.display = 'flex';
-        nextBtn.classList.add('hidden');
-        nextBtn.style.display = 'none';
-    }
-
-    function handleAnswer(selectedEl, correctAnswer, word, phase) {
-        // 防止重复点击
-        if (selectedEl.classList.contains('disabled')) return;
-        
-        const isCorrect = selectedEl.dataset.correct === 'true';
-        const options = document.querySelectorAll('.option');
-        
-        // 禁用所有选项
-        options.forEach(opt => {
-            opt.classList.add('disabled');
-            if (opt.dataset.correct === 'true') {
-                opt.classList.add('correct');
-            }
-        });
-
-        const data = DB.getData();
-        const masterCount = data.settings.masterCount;
-
-        if (isCorrect) {
-            studyState.correctCount++;
-            data.todayCorrect++;
-            
-            // 更新单词进度
-            const progress = DB.getWordProgress(word.word);
-            
-            if (progress.status === 'learned') {
-                // 已学状态：增加连对次数
-                progress.correctStreak++;
-                
-                // 检查是否掌握
-                if (progress.correctStreak >= masterCount) {
-                    progress.status = 'mastered';
-                    showToast(`🎉 ${word.word} 已掌握！`);
-                }
-            } else if (progress.status === 'learning') {
-                // 正在学状态
-                progress.correctStreak = 1;
-            }
-            
-            DB.updateWordProgress(word.word, progress);
-
-            // 从本轮移除（答对的）
-            const idx = studyState.studyWords.findIndex(item => item.word.word === word.word);
-            if (idx !== -1) {
-                studyState.studyWords.splice(idx, 1);
-            }
-
-            // 答对的单词：走完4个题型后标记为已学
-            if (studyState.mode === 'new' && phase === 4) {
-                const p = DB.getWordProgress(word.word);
-                if (p.status === 'learning') {
-                    DB.updateWordProgress(word.word, { status: 'learned', phase: 4 });
-                    data.todayNewLearned++;
-                }
-            }
-
-            // 复习模式统计
-            if (studyState.mode === 'review') {
-                data.todayReviewed++;
-            }
-
-            DB.saveData(data);
-
-            // 延迟进入下一题
-            setTimeout(() => {
-                studyState.currentIndex++;
-                nextStep();
-            }, 500);
-
-        } else {
-            // 答错
-            selectedEl.classList.add('wrong');
-            studyState.wrongCount++;
-            data.todayWrong++;
-            
-            // 更新单词进度
-            const progress = DB.getWordProgress(word.word);
-            progress.correctStreak = 0;
-            
-            // 已掌握的单词错了：降级为已学
-            if (progress.status === 'mastered') {
-                progress.status = 'learned';
-            }
-            
-            DB.updateWordProgress(word.word, progress);
-            DB.saveData(data);
-
-            // 新学模式英选中错了：加入补做队列
-            if (studyState.mode === 'new' && phase === 1) {
-                if (!studyState.retryQueue.some(item => item.word.word === word.word)) {
-                    studyState.retryQueue.push({ word: word });
-                }
-            }
-
-            // 延迟后重新显示同一题
-            setTimeout(() => {
-                studyState.currentIndex++;
-                nextStep();
-            }, 800);
+            renderQuestion(word);
         }
     }
-
+    
+    function renderQuestion(word) {
+        const content = document.getElementById('studyContent');
+        const allWords = getData().words.filter(w => w.word !== word.word);
+        const others = allWords.sort(() => Math.random() - 0.5).slice(0, 3);
+        let question, options, correct;
+        if (study.stage === 1) { question = word.word; options = [word.meaning, ...others.map(o => o.meaning)].sort(() => Math.random() - 0.5); correct = word.meaning; }
+        else if (study.stage === 2) { question = word.meaning; options = [word.word, ...others.map(o => o.word)].sort(() => Math.random() - 0.5); correct = word.word; }
+        else if (study.stage === 3) { question = word.word; options = [word.meaning, ...others.map(o => o.meaning)].sort(() => Math.random() - 0.5); correct = word.meaning; }
+        else { question = word.meaning; options = [word.word, ...others.map(o => o.word)].sort(() => Math.random() - 0.5); correct = word.word; }
+        
+        content.innerHTML = `<div class="word-card"><div class="word-text">${question}</div></div><div class="options">${options.map(o => `<button class="option" data-ans="${o}">${o}</button>`).join('')}</div>`;
+        content.querySelectorAll('.option').forEach(btn => {
+            btn.onclick = function() {
+                const ans = this.dataset.ans;
+                const isCorrect = ans === correct;
+                content.querySelectorAll('.option').forEach(b => { b.classList.add('disabled'); if (b.dataset.ans === correct) b.classList.add('correct'); });
+                if (isCorrect) { word.streak = (word.streak || 0) + 1; word.wrongCount = 0; }
+                else { word.wrongCount = (word.wrongCount || 0) + 1; word.streak = 0; this.classList.add('wrong'); study.wrongQueue.push(word); }
+                saveData(getData());
+                setTimeout(() => { study.stage++; if (study.stage > 4) { word.stage = 4; saveData(getData()); study.idx++; study.stage = 1; } renderStep(); }, 800);
+            };
+        });
+        if (getSettings().speak && (study.stage === 1 || study.stage === 3) && 'speechSynthesis' in window) speechSynthesis.speak(new SpeechSynthesisUtterance(word.word));
+    }
+    
     function completeStudy() {
-        document.getElementById('studyActive').classList.add('hidden');
-        document.getElementById('studyComplete').classList.remove('hidden');
-
-        const data = DB.getData();
-        data.lastStudyDate = getToday();
-        DB.saveData(data);
-
-        const total = studyState.correctCount + studyState.wrongCount;
-        const accuracy = total > 0 ? Math.round((studyState.correctCount / total) * 100) : 0;
-
-        document.getElementById('completeCorrect').textContent = studyState.correctCount;
-        document.getElementById('completeWrong').textContent = studyState.wrongCount;
-        document.getElementById('completeAccuracy').textContent = accuracy + '%';
-
-        const title = document.getElementById('completeTitle');
-        const subtitle = document.getElementById('completeSubtitle');
-
-        if (accuracy >= 90) {
-            title.textContent = '🌟 太棒了！';
-            subtitle.textContent = '正确率超过90%，继续保持！';
-        } else if (accuracy >= 70) {
-            title.textContent = '👍 不错哦！';
-            subtitle.textContent = '正确率超过70%，再接再厉！';
-        } else {
-            title.textContent = '💪 继续加油！';
-            subtitle.textContent = '多复习几遍，一定能掌握！';
-        }
-
-        updateStats();
+        document.getElementById('completeSubtitle').textContent = `本次学习了 ${study.words.length} 个单词`;
+        showPage('complete');
     }
-
-    function backToStudyReady() {
-        document.getElementById('studyReady').classList.remove('hidden');
-        document.getElementById('studyActive').classList.add('hidden');
-        document.getElementById('studyComplete').classList.add('hidden');
-        updateStats();
+    
+    function loadSettings() {
+        const s = getSettings();
+        document.getElementById('settingNewCount').value = s.newCount;
+        document.getElementById('settingReviewCount').value = s.reviewCount;
+        document.getElementById('settingMasterCount').value = s.masterCount;
+        document.getElementById('settingSpeak').classList.toggle('active', s.speak);
     }
-
-    // ==================== 文件导入 ====================
-    function handleFileUpload(file) {
+    
+    function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
+    
+    document.querySelectorAll('.nav-item').forEach(n => n.onclick = function() { showPage(this.dataset.page); });
+    document.getElementById('backBtn').onclick = () => showPage('home');
+    document.getElementById('btnStudy').onclick = () => startStudy('new');
+    document.getElementById('btnReview').onclick = () => startStudy('review');
+    document.getElementById('btnWrongReview').onclick = () => startStudy('wrong');
+    document.getElementById('btnBackHome').onclick = () => showPage('home');
+    document.getElementById('settingNewCount').onchange = function() { const s = getSettings(); s.newCount = +this.value; saveSettings(s); };
+    document.getElementById('settingReviewCount').onchange = function() { const s = getSettings(); s.reviewCount = +this.value; saveSettings(s); };
+    document.getElementById('settingMasterCount').onchange = function() { const s = getSettings(); s.masterCount = +this.value; saveSettings(s); };
+    document.getElementById('settingSpeak').onclick = function() { const s = getSettings(); s.speak = !s.speak; saveSettings(s); this.classList.toggle('active', s.speak); };
+    document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
+    document.getElementById('fileInput').onchange = function() {
+        if (!this.files[0]) return;
         const reader = new FileReader();
         reader.onload = function(e) {
-            const content = e.target.result;
-            parseAndPreview(content);
-        };
-        reader.readAsText(file);
-    }
-
-    function parseAndPreview(content) {
-        const lines = content.split('\n').filter(line => line.trim());
-        const previewList = document.getElementById('previewList');
-        const previewArea = document.getElementById('previewArea');
-        
-        const parsed = [];
-        
-        lines.forEach((line, index) => {
-            const parts = line.split('|').map(p => p.trim());
-            if (parts.length >= 2) {
-                parsed.push({
-                    word: parts[0] || '',
-                    meaning: parts[1] || '',
-                    definition: parts[2] || '',
-                    example: parts[3] || ''
-                });
-            }
-        });
-
-        if (parsed.length > 0) {
-            previewArea.classList.remove('hidden');
-            previewList.innerHTML = parsed.slice(0, 20).map(w => `
-                <div class="preview-item">
-                    <span class="word">${w.word}</span> - 
-                    <span>${w.meaning}</span>
-                </div>
-            `).join('');
-            
-            if (parsed.length > 20) {
-                previewList.innerHTML += `<div class="preview-item" style="color: var(--text-secondary);">...还有 ${parsed.length - 20} 条</div>`;
-            }
-        }
-
-        window.pendingImport = parsed;
-    }
-
-    function confirmImport() {
-        if (!window.pendingImport || window.pendingImport.length === 0) {
-            showToast('没有可导入的单词');
-            return;
-        }
-
-        const data = DB.getData();
-        let added = 0;
-
-        window.pendingImport.forEach(newWord => {
-            // 检查是否已存在（包括已掌握的）
-            const exists = data.words.some(w => w.word.toLowerCase() === newWord.word.toLowerCase());
-            if (!exists) {
-                data.words.push(newWord);
-                // 新导入的词默认状态是new，不需要额外设置
-                added++;
-            }
-        });
-
-        if (data.words.length > 0 && !data.wordbookName) {
-            data.wordbookName = '导入词书';
-        }
-
-        DB.saveData(data);
-        window.pendingImport = null;
-        
-        showToast(`导入完成：新增 ${added} 条`);
-        updateStats();
-        
-        document.getElementById('previewArea').classList.add('hidden');
-        document.getElementById('previewList').innerHTML = '';
-    }
-
-    function loadBuiltInWords() {
-        const data = DB.getData();
-        let added = 0;
-
-        BUILTIN_WORDS.forEach(word => {
-            const exists = data.words.some(w => w.word.toLowerCase() === word.word.toLowerCase());
-            if (!exists) {
-                data.words.push(word);
-                added++;
-            }
-        });
-
-        if (data.words.length > 0 && !data.wordbookName) {
-            data.wordbookName = '化学词汇';
-        }
-
-        DB.saveData(data);
-        showToast(`已加载 ${added} 个化学词汇`);
-        updateStats();
-    }
-
-    function clearWordbook() {
-        if (confirm('确定要清空当前词书吗？此操作不可恢复！')) {
-            DB.clearWordbook();
-            showToast('词书已清空');
-            updateStats();
-        }
-    }
-
-    // ==================== 设置保存/加载 ====================
-    function loadSettings() {
-        const data = DB.getData();
-        const settings = data.settings;
-
-        document.getElementById('settingSpeak').checked = settings.speak;
-        document.getElementById('settingAllowZhan').checked = settings.allowZhan;
-        document.getElementById('settingMasterCount').value = settings.masterCount;
-
-        document.querySelectorAll('.question-type').forEach(cb => {
-            cb.checked = settings.questionTypes.includes(parseInt(cb.value));
-        });
-
-        document.querySelectorAll('#dailyNewGroup .select-btn').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.dataset.value) === settings.dailyNew);
-        });
-        document.querySelectorAll('#dailyReviewGroup .select-btn').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.dataset.value) === settings.dailyReview);
-        });
-    }
-
-    function saveSettings() {
-        const data = DB.getData();
-        
-        data.settings.speak = document.getElementById('settingSpeak').checked;
-        data.settings.allowZhan = document.getElementById('settingAllowZhan').checked;
-        data.settings.masterCount = parseInt(document.getElementById('settingMasterCount').value);
-
-        data.settings.questionTypes = [];
-        document.querySelectorAll('.question-type:checked').forEach(cb => {
-            data.settings.questionTypes.push(parseInt(cb.value));
-        });
-        if (data.settings.questionTypes.length === 0) {
-            data.settings.questionTypes = [1, 2, 3, 4];
-        }
-
-        const activeNew = document.querySelector('#dailyNewGroup .select-btn.active');
-        const activeReview = document.querySelector('#dailyReviewGroup .select-btn.active');
-        if (activeNew) data.settings.dailyNew = parseInt(activeNew.dataset.value);
-        if (activeReview) data.settings.dailyReview = parseInt(activeReview.dataset.value);
-
-        DB.saveData(data);
-    }
-
-    // ==================== 事件绑定 ====================
-    document.addEventListener('DOMContentLoaded', function() {
-        // 底部导航切换
-        document.querySelectorAll('.nav-item').forEach(function(item) {
-            item.addEventListener('click', function() {
-                switchPage(this.dataset.page);
+            const lines = e.target.result.split('\n').filter(l => l.trim());
+            const d = getData();
+            let added = 0;
+            lines.forEach(l => {
+                const parts = l.trim().split(/[\t ]+/);
+                if (parts.length >= 2) {
+                    const word = parts[0].trim(), meaning = parts.slice(1).join(' ').trim();
+                    if (word && meaning && !d.words.find(w => w.word.toLowerCase() === word.toLowerCase())) {
+                        d.words.push({ word, meaning, stage: 0, streak: 0, wrongCount: 0, showedCard: false });
+                        added++;
+                    }
+                }
             });
-        });
-
-        // 首页新学按钮
-        document.getElementById('btnNewStudy').addEventListener('click', function() {
-            switchPage('study');
-            document.getElementById('studyReady').classList.remove('hidden');
-            document.getElementById('studyActive').classList.add('hidden');
-            document.getElementById('studyComplete').classList.add('hidden');
-            updateStudyReady();
-        });
-
-        // 首页复习按钮
-        document.getElementById('btnReview').addEventListener('click', function() {
-            switchPage('study');
-            document.getElementById('studyReady').classList.remove('hidden');
-            document.getElementById('studyActive').classList.add('hidden');
-            document.getElementById('studyComplete').classList.add('hidden');
-            updateStudyReady();
-        });
-
-        // 学习页面按钮
-        document.getElementById('btnStartNew').addEventListener('click', function() {
-            startStudy('new');
-        });
-        
-        document.getElementById('btnStartReview').addEventListener('click', function() {
-            startStudy('review');
-        });
-
-        // 返回首页按钮
-        document.getElementById('btnBackHome').addEventListener('click', function() {
-            backToStudyReady();
-            switchPage('home');
-        });
-
-        // 下一题按钮
-        document.getElementById('btnNextWord').addEventListener('click', function() {
-            if (studyState.isShowingCard) {
-                studyState.currentIndex++;
-                nextStep();
-            }
-        });
-
-        // 发音按钮
-        document.getElementById('speakerBtn').addEventListener('click', function(e) {
-            e.stopPropagation();
-            const word = document.getElementById('displayWord').textContent;
-            speak(word);
-        });
-
-        // 点击单词发音
-        document.getElementById('displayWord').addEventListener('click', function() {
-            const word = document.getElementById('displayWord').textContent;
-            speak(word);
-        });
-
-        // 重置进度
-        document.getElementById('btnResetProgress').addEventListener('click', function() {
-            if (confirm('确定要重置所有学习进度吗？')) {
-                DB.resetProgress();
-                showToast('学习进度已重置');
-                updateStats();
-            }
-        });
-
-        // 清除数据
-        document.getElementById('btnClearData').addEventListener('click', function() {
-            if (confirm('确定要清除所有数据吗？此操作不可恢复！')) {
-                DB.clearAll();
-                showToast('所有数据已清除');
-                loadSettings();
-                updateStats();
-            }
-        });
-
-        // 清空词书
-        document.getElementById('btnClearWordbook').addEventListener('click', clearWordbook);
-
-        // 导入词书
-        document.getElementById('btnImportWordbook').addEventListener('click', function() {
-            switchPage('import');
-        });
-
-        // 确认导入
-        document.getElementById('btnConfirmImport').addEventListener('click', confirmImport);
-
-        // 文件上传
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-
-        uploadArea.addEventListener('click', function() {
-            fileInput.click();
-        });
-        
-        uploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            uploadArea.style.borderColor = 'var(--primary)';
-        });
-
-        uploadArea.addEventListener('dragleave', function() {
-            uploadArea.style.borderColor = 'var(--border)';
-        });
-
-        uploadArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            uploadArea.style.borderColor = 'var(--border)';
-            const file = e.dataTransfer.files[0];
-            if (file) handleFileUpload(file);
-        });
-
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) handleFileUpload(file);
-        });
-
-        // 加载内置词书
-        document.getElementById('btnLoadBuiltIn').addEventListener('click', loadBuiltInWords);
-
-        // 设置变更保存
-        document.getElementById('settingSpeak').addEventListener('change', saveSettings);
-        document.getElementById('settingAllowZhan').addEventListener('change', saveSettings);
-        document.getElementById('settingMasterCount').addEventListener('change', 
+            saveData(d);
+            showToast(`已导入 ${added} 个单词`);
+            updateHome();
+        };
+        reader.readAsText(this.files[0]);
+    };
+    document.getElementById('btnClearData').onclick = function() { if (confirm('确定要清空所有数据吗？')) { localStorage.removeItem(STORAGE_KEY); showToast('已清空'); updateHome(); } };
+    
+    updateHome();
+})();
+</script>
+</body>
+</html>
