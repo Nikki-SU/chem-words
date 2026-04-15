@@ -319,6 +319,7 @@
         
         // ========== 学习状态 ==========
         let study = null;
+        let pendingWrong = null; // 待处理的错误（需要先显示卡片）
         
         // 将单词按10个一组切分
         function chunkWords(words, size) {
@@ -411,6 +412,22 @@
             $('progressFill').style.width = progress + '%';
             
             let html = `<div class="group-hint">第 ${groupNum}/${totalGroups} 组</div>`;
+            
+            // 如果有待处理的错误卡片，先显示卡片
+            if (pendingWrong) {
+                const word = pendingWrong.word;
+                html += `
+                    <div class="word-card">
+                        <div class="word-en">${word.en}</div>
+                        <div class="word-cn">${word.cn}</div>
+                        <div class="word-def">${word.def || ''}</div>
+                        <div class="word-ex">${word.ex || ''}</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="retryAfterCard()">重做</button>
+                `;
+                $('studyContent').innerHTML = html;
+                return;
+            }
             
             // 学习模式：first阶段（英选中 -> 卡片）
             if (study.mode === 'learn' && study.phase === 'first') {
@@ -539,6 +556,39 @@
             }
         };
         
+        // 答错后显示卡片，点击重做
+        window.retryAfterCard = function() {
+            if (!pendingWrong) return;
+            
+            const word = pendingWrong.word;
+            const type = pendingWrong.type;
+            
+            // 将错误单词加入当前队列末尾（稍后重做）
+            study.queue.push(word);
+            
+            // 清除待处理错误
+            pendingWrong = null;
+            
+            // 继续下一个题目
+            study.idx++;
+            
+            if (study.idx < study.queue.length) {
+                renderStudy();
+            } else {
+                // 当前阶段完成
+                if (study.mode === 'learn' && study.phase === 'first') {
+                    // 第一阶段完成，进入题型阶段
+                    study.phase = 'types';
+                    study.typeIndex = 0;
+                    study.queue = [...study.groups[study.groupIndex]];
+                    study.idx = 0;
+                    renderStudy();
+                } else {
+                    nextTypeOrGroup();
+                }
+            }
+        };
+        
         window.checkAnswer = function(selected, correct, type) {
             const btns = document.querySelectorAll('.option');
             const isCorrect = selected === correct;
@@ -573,16 +623,9 @@
                         study.showingCard = true;
                         renderStudy();
                     } else {
-                        // 错误，加入错误队列末尾，继续下一个
-                        study.wrongQueue.push({ word: word, type: 1 });
-                        study.idx++;
-                        
-                        if (study.idx < study.queue.length) {
-                            renderStudy();
-                        } else {
-                            // 当前组第一阶段完成，处理错误
-                            processWrongInFirst();
-                        }
+                        // 错误：设置待处理错误，先显示卡片
+                        pendingWrong = { word: word, type: 1 };
+                        renderStudy();
                     }
                 } else {
                     // 题型阶段
@@ -591,20 +634,12 @@
                         if (study.idx < study.queue.length) {
                             renderStudy();
                         } else {
-                            // 当前题型完成
                             nextTypeOrGroup();
                         }
                     } else {
-                        // 错误，加入错误队列
-                        study.wrongQueue.push({ word: word, type: type });
-                        study.idx++;
-                        
-                        if (study.idx < study.queue.length) {
-                            renderStudy();
-                        } else {
-                            // 当前题型完成，处理错误
-                            processWrongInTypes();
-                        }
+                        // 错误：设置待处理错误，先显示卡片
+                        pendingWrong = { word: word, type: type };
+                        renderStudy();
                     }
                 }
             }, 600);
