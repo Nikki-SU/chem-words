@@ -704,10 +704,15 @@
         
         window.retryAfterCard = function() {
             if (!pendingWrong) return;
-            // 清除待处理错误，保持在当前位置重做
+            
+            // 将错题加入队列末尾（稍后再做一次）
+            study.queue.push(pendingWrong.word);
+            
+            // 清除待处理错误，立即重做当前题目
             pendingWrong = null;
             saveProgress();
-            // 直接重新显示当前题目
+            
+            // 重新显示当前题目
             renderStudy();
         };
         
