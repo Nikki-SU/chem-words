@@ -286,14 +286,8 @@
                 <textarea class="text-input" id="literatureText" style="min-height:150px;" placeholder="将文献内容粘贴到这里..."></textarea>
             </div>
             <div class="input-group">
-                <div class="input-label">提取词汇数量</div>
-                <div class="select-group" id="extractCountGroup">
-                    <button class="select-btn" data-v="20">20</button>
-                    <button class="select-btn active" data-v="50">50</button>
-                    <button class="select-btn" data-v="100">100</button>
-                    <button class="select-btn" data-v="150">150</button>
-                    <button class="select-btn" data-v="200">200</button>
-                </div>
+                <div class="input-label">提取词汇数量（上下浮动5个）</div>
+                <input type="number" class="text-input" id="extractCountInput" value="50" min="10" max="300" style="width:120px;">
             </div>
             <div class="input-group">
                 <div class="input-label">专业领域（可选）</div>
@@ -902,7 +896,9 @@
         };
         
         function generatePrompt(count, field) {
-            return `请从以下文献中提取${count}个专业词汇和术语，要求：
+            const minCount = Math.max(5, count - 5);
+            const maxCount = count + 5;
+            return `请从以下文献中提取${minCount}-${maxCount}个专业词汇和术语，要求：
 1. 只提取专业术语，不要提取日常词汇（如the, is, are等）
 2. 每个词汇提供：英文|中文翻译|中英文定义各一句|例句（来自原文或自造）
 3. 格式严格为：英文|中文|英文定义|例句
@@ -916,7 +912,7 @@ perovskite|钙钛矿|A crystalline material with the formula ABX3, widely used i
         }
         
         function updatePromptBox() {
-            const count = parseInt(document.querySelector('#extractCountGroup .select-btn.active')?.dataset.v || 50);
+            const count = parseInt($('extractCountInput').value) || 50;
             const field = $('fieldInput').value;
             $('promptBox').textContent = generatePrompt(count, field);
         }
@@ -927,7 +923,7 @@ perovskite|钙钛矿|A crystalline material with the formula ABX3, widely used i
             const provider = document.querySelector('#apiProviderGroup .select-btn.active')?.dataset.v || 'openai';
             const apiKey = $('apiKeyInput').value;
             const model = $('modelNameInput').value || DEFAULT_MODELS[provider];
-            const count = parseInt(document.querySelector('#extractCountGroup .select-btn.active')?.dataset.v || 50);
+            const count = parseInt($('extractCountInput').value) || 50;
             const field = $('fieldInput').value;
             const text = $('literatureText').value;
             
@@ -1094,15 +1090,8 @@ perovskite|钙钛矿|A crystalline material with the formula ABX3, widely used i
                 toast('配置已保存');
             };
             
-            // 提取数量选择
-            document.querySelectorAll('#extractCountGroup .select-btn').forEach(btn => {
-                btn.onclick = function() {
-                    document.querySelectorAll('#extractCountGroup .select-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    updatePromptBox();
-                };
-            });
-            
+            // 提取数量输入
+            $('extractCountInput').oninput = updatePromptBox;
             $('fieldInput').oninput = updatePromptBox;
             
             // 复制指令
