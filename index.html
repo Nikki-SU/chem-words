@@ -1509,6 +1509,10 @@
             return;
         }
 
+        // 初始化队列
+        studyState.allWordsQueue = studyState.studyWords.map(item => item.word);
+        studyState.wordQueue = [...studyState.allWordsQueue];
+
         // 重置每日统计
         const today = getToday();
         if (data.lastStudyDate !== today) {
@@ -1526,10 +1530,21 @@
         document.getElementById('studyComplete').classList.add('hidden');
 
         // 开始学习
+        console.log('[学习] 开始学习，模式:', mode, '单词数量:', studyState.wordQueue.length);
         nextStep();
     }
 
     function nextStep() {
+        console.log('[nextStep] 开始执行，currentIndex:', studyState.currentIndex, 'wordQueue长度:', studyState.wordQueue.length, 'phase:', studyState.phase);
+        
+        // 边界检查
+        if (studyState.wordQueue.length === 0) {
+            console.error('[nextStep] 单词队列为空！');
+            showToast('加载失败，请重试');
+            completeStudy();
+            return;
+        }
+        
         // 处理错题补做
         if (studyState.retryQueue.length > 0) {
             studyState.isRetrying = true;
@@ -1548,12 +1563,14 @@
 
         // 检查当前题型是否完成
         if (studyState.currentIndex >= studyState.wordQueue.length) {
+            console.log('[nextStep] 队列已遍历完，调用finishCurrentPhase');
             finishCurrentPhase();
             return;
         }
 
         // 显示当前单词
         const item = studyState.wordQueue[studyState.currentIndex];
+        console.log('[nextStep] 显示单词:', item?.word?.word || item?.word);
         
         if (studyState.mode === 'new' && studyState.phase === 0) {
             showWordCard(item.word);
@@ -1671,11 +1688,19 @@
     }
 
     function showWordCard(word) {
+        console.log('[showWordCard] 显示单词卡片:', word.word);
         studyState.isShowingCard = true;
         
+        // 确保 DOM 元素存在
         const card = document.getElementById('wordCard');
         const optionsArea = document.getElementById('optionsArea');
         const nextBtn = document.getElementById('btnNextWord');
+        
+        if (!card || !optionsArea || !nextBtn) {
+            console.error('[showWordCard] DOM 元素缺失！');
+            showToast('页面加载错误，请刷新重试');
+            return;
+        }
         
         // 移除之前的斩按钮
         const oldZhan = card.querySelector('.zhan-btn');
@@ -1694,8 +1719,11 @@
         document.getElementById('displayExample').style.visibility = 'visible';
 
         card.classList.remove('hidden');
+        card.style.display = 'flex';
         optionsArea.innerHTML = '';
+        optionsArea.style.display = 'none';
         nextBtn.classList.remove('hidden');
+        nextBtn.style.display = 'block';
         nextBtn.textContent = '下一题';
 
         speak(word.word);
@@ -1739,11 +1767,19 @@
     }
 
     function showQuestion(word, phase) {
+        console.log('[showQuestion] 显示题目，word:', word.word, 'phase:', phase);
         studyState.isShowingCard = false;
         
+        // 确保 DOM 元素存在
         const card = document.getElementById('wordCard');
         const optionsArea = document.getElementById('optionsArea');
         const nextBtn = document.getElementById('btnNextWord');
+        
+        if (!card || !optionsArea || !nextBtn) {
+            console.error('[showQuestion] DOM 元素缺失！');
+            showToast('页面加载错误，请刷新重试');
+            return;
+        }
         
         // 移除斩按钮
         const oldZhan = card.querySelector('.zhan-btn');
@@ -1809,6 +1845,7 @@
 
         // 渲染选项
         optionsArea.innerHTML = '';
+        optionsArea.style.display = 'grid';
         options.forEach(opt => {
             const div = document.createElement('div');
             div.className = 'option';
@@ -1819,7 +1856,9 @@
             optionsArea.appendChild(div);
         });
 
+        card.style.display = 'flex';
         nextBtn.classList.add('hidden');
+        nextBtn.style.display = 'none';
     }
 
     function handleAnswer(selectedEl, correctAnswer, word, phase) {
@@ -2243,54 +2282,4 @@
         // 设置变更保存
         document.getElementById('settingSpeak').addEventListener('change', saveSettings);
         document.getElementById('settingAllowZhan').addEventListener('change', saveSettings);
-        document.getElementById('settingMasterCount').addEventListener('change', saveSettings);
-
-        document.querySelectorAll('.question-type').forEach(function(cb) {
-            cb.addEventListener('change', saveSettings);
-        });
-
-        document.querySelectorAll('#dailyNewGroup .select-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('#dailyNewGroup .select-btn').forEach(function(b) { b.classList.remove('active'); });
-                this.classList.add('active');
-                saveSettings();
-            });
-        });
-
-        document.querySelectorAll('#dailyReviewGroup .select-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('#dailyReviewGroup .select-btn').forEach(function(b) { b.classList.remove('active'); });
-                this.classList.add('active');
-                saveSettings();
-            });
-        });
-
-        // 搜索功能
-        document.getElementById('newbookSearch').addEventListener('input', function(e) {
-            renderNewbookList(e.target.value);
-        });
-
-        document.getElementById('learningSearch').addEventListener('input', function(e) {
-            renderLearningList(e.target.value);
-        });
-
-        document.getElementById('learnedSearch').addEventListener('input', function(e) {
-            renderLearnedList(e.target.value);
-        });
-
-        document.getElementById('masteredSearch').addEventListener('input', function(e) {
-            renderMasteredList(e.target.value);
-        });
-
-        // 初始化
-        loadSettings();
-        updateStats();
-        
-        const data = DB.getData();
-        if (data.words.length === 0) {
-            loadBuiltInWords();
-        }
-    });
-    </script>
-</body>
-</html>
+        document.getElementById('settingMasterCount').addEventListener('change', 
