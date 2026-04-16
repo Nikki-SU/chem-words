@@ -173,9 +173,13 @@
         <div class="card-section">
             <div class="section-title">📖 当前词书：<span id="currentBookName">默认词书</span></div>
             <div class="setting-row">
-                <span class="setting-label">上传词书 (.txt)</span>
+                <span class="setting-label">上传词书 (.txt/.json)</span>
                 <button class="btn-small btn-outline" id="btnUpload">选择文件</button>
-                <input type="file" id="fileInput" accept=".txt" style="display:none;">
+                <input type="file" id="fileInput" accept=".txt,.json" style="display:none;">
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">粘贴JSON导入</span>
+                <button class="btn-small btn-outline" id="btnPasteImport">粘贴导入</button>
             </div>
             <div class="setting-row">
                 <span class="setting-label">手动录入</span>
@@ -1471,6 +1475,33 @@ photovoltaic|光伏的|与光生电效应相关的，指将光能直接转换为
             };
             
             $('btnManualAdd').onclick = () => showPage('add');
+            
+            // 粘贴JSON导入
+            $('btnPasteImport').onclick = async function() {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (!text.trim()) {
+                        toast('剪贴板为空');
+                        return;
+                    }
+                    const result = importWords(text, '学术站导入');
+                    let msg = `导入成功：${result.added} 词`;
+                    if (result.mastered > 0) msg += `，跳过已掌握：${result.mastered} 词`;
+                    if (result.skipped > 0) msg += `，已存在：${result.skipped} 词`;
+                    toast(msg);
+                    updateStats();
+                } catch (e) {
+                    // 如果剪贴板API失败，使用弹窗输入
+                    const text = prompt('粘贴JSON数据：');
+                    if (!text || !text.trim()) return;
+                    const result = importWords(text, '学术站导入');
+                    let msg = `导入成功：${result.added} 词`;
+                    if (result.mastered > 0) msg += `，跳过已掌握：${result.mastered} 词`;
+                    if (result.skipped > 0) msg += `，已存在：${result.skipped} 词`;
+                    toast(msg);
+                    updateStats();
+                }
+            };
             $('btnConfirmAdd').onclick = function() {
                 const text = $('addText').value;
                 if (!text.trim()) { toast('请输入单词'); return; }
