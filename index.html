@@ -1217,9 +1217,56 @@
         }
         
         function importWords(text, bookName) {
-            const lines = text.split('\n').filter(l => l.trim());
             const d = getData();
             let added = 0, skipped = 0, mastered = 0;
+            
+            // 尝试检测JSON格式
+            try {
+                const json = JSON.parse(text);
+                if (Array.isArray(json)) {
+                    // JSON格式导入
+                    json.forEach(item => {
+                        const w = {
+                            en: (item.en || item.english || '').trim(),
+                            cn: (item.cn || item.chinese || '').trim(),
+                            defCn: (item.defCn || item.definition || '').trim(),
+                            defEn: (item.defEn || '').trim(),
+                            ex: (item.ex || item.example || item.sentence || '').trim(),
+                            cardShown: false,
+                            streak: 0,
+                            wrongCount: 0,
+                            correctTypes: []
+                        };
+                        
+                        if (!w.en) return;
+                        
+                        const existing = d.words.find(x => x.en.toLowerCase() === w.en.toLowerCase());
+                        if (existing) {
+                            if (classify(existing, d.settings) === 'mastered') {
+                                mastered++;
+                            } else {
+                                skipped++;
+                            }
+                            return;
+                        }
+                        
+                        d.words.push(w);
+                        added++;
+                    });
+                    
+                    if (added > 0) {
+                        if (bookName) d.name = bookName;
+                        saveData(d);
+                    }
+                    
+                    return { added, skipped, mastered };
+                }
+            } catch (e) {
+                // 不是JSON，继续按TXT处理
+            }
+            
+            // TXT格式：每行一个单词
+            const lines = text.split('\n').filter(l => l.trim());
             lines.forEach(line => {
                 const w = parseWordLine(line);
                 if (!w) return;
