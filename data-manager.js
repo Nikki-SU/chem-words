@@ -46,6 +46,17 @@ const DataManager = {
      * @param {string} text - 词书文本，每行格式：英文|中文|定义|例句
      */
     importWords(text) {
+        // 尝试检测是否为JSON格式
+        try {
+            const json = JSON.parse(text);
+            if (Array.isArray(json)) {
+                return this.importJSON(json);
+            }
+        } catch (e) {
+            // 不是JSON，继续按TXT处理
+        }
+        
+        // TXT格式：每行一个单词，用|分隔
         const lines = text.trim().split('\n');
         const words = [];
         const errors = [];
@@ -78,6 +89,48 @@ const DataManager = {
                 // 只有英文的情况
                 errors.push(`第${index + 1}行: "${parts[0]}" - 缺少中文翻译`);
             }
+        });
+
+        // 保存到本地
+        if (words.length > 0) {
+            this.saveWords(words);
+        }
+
+        return {
+            success: words.length,
+            errors: errors
+        };
+    },
+    
+    /**
+     * 导入JSON格式词汇
+     */
+    importJSON(jsonArray) {
+        const words = [];
+        const errors = [];
+
+        jsonArray.forEach((item, index) => {
+            if (!item.en && !item.english) {
+                errors.push(`第${index + 1}项: 缺少英文单词`);
+                return;
+            }
+
+            words.push({
+                id: this.generateId(),
+                english: item.en || item.english || '',
+                chinese: item.cn || item.chinese || '',
+                definition: item.defCn || item.definition || '',
+                sentence: item.ex || item.example || item.sentence || '',
+                // 学习进度
+                correctCount: 0,
+                totalErrors: 0,
+                learned: false,
+                mastered: false,
+                lastMode: 0,
+                lastStep: 0,
+                addedToNotebook: false,
+                createdAt: Date.now()
+            });
         });
 
         // 保存到本地
